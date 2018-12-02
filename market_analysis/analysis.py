@@ -2,8 +2,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from main import ReturnsStatistics
-from main import TechnicalFeaturesCalculator
+from features import ReturnsStatistics
+from features import TechnicalFeaturesCalculator
 
 returns_statistics= ReturnsStatistics()
 tfc = TechnicalFeaturesCalculator()
@@ -13,7 +13,12 @@ matplotlib.rcParams['axes.color_cycle'] = ['orchid', 'darkblue', 'gold']
 
 def plot_close(data):
     data['Close'].plot()
-    plt.title("Close Price")
+    plt.title("Price")
+    plt.show()
+
+def plot_volume(data):
+    data['Volume'].plot()
+    plt.title("Volume")
     plt.show()
 
 def plot_rolling_mean_and_std(data, window):
@@ -34,8 +39,8 @@ def get_daily_returns_related_to_market(prices, market_prices):
     prices = prices["Close"]
     market_prices = market_prices["Close"]
 
-    daily_returns = returns_statistics.compute_daily_returns(prices)
-    market_daily_returns = returns_statistics.compute_daily_returns(market_prices)
+    daily_returns = returns_statistics.compute_returns(prices)
+    market_daily_returns = returns_statistics.compute_returns(market_prices)
 
     daily_returns.plot(label = "Stock Daily Returns")
     market_daily_returns.plot(label = "Market Daily Returns")
@@ -53,13 +58,13 @@ def get_daily_returns_related_to_market(prices, market_prices):
 
 def plot_daily_returns_hist(data):
     prices = data['Close']
-    daily_returns = returns_statistics.compute_daily_returns(prices)
+    daily_returns = returns_statistics.compute_returns(prices)
 
     histogram_daily_return(daily_returns)
 
 def plot_daily_returns(data):
     prices = data['Close']
-    daily_returns = returns_statistics.compute_daily_returns(prices)
+    daily_returns = returns_statistics.compute_returns(prices)
     daily_returns*=100
 
     daily_returns.plot()

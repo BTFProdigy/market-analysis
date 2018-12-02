@@ -32,7 +32,7 @@ class PreprocessingSteps:
     def convert_to_stationary(self, data):
         data.dropna(inplace=True)
         num = 0
-        # self.stationarity_checker.test_stationarity_visually_for_all_parameters(data)
+        self.stationarity_checker.test_stationarity_visually_for_all_parameters(data)
         while not self.stationarity_checker.are_all_series_stationary(data):
             if (num<1):
                 data = data.diff()

@@ -1,7 +1,7 @@
 from market_analysis.reinforcement.diskretizing_state_space import StateSpace
 
 from market_analysis.data_reader import DataReaderImpl
-from market_analysis.main import DateFrameBuilder
+from market_analysis.features import DateFrameBuilder
 from market_analysis.reinforcement.evaluation import Evaluation
 from market_analysis.reinforcement.q_table import QTable
 from market_analysis.reinforcement.reward import Reward
@@ -11,7 +11,7 @@ from q_learning import QLearning
 def build_dataframe(data):
     dataframe = (
         DateFrameBuilder(data)
-                .add_daily_returns()
+                .add_returns()
                 .add_bolinger_bands_diff(7)
             .build()
     )
