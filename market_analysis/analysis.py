@@ -13,11 +13,15 @@ matplotlib.rcParams['axes.color_cycle'] = ['orchid', 'darkblue', 'gold']
 
 def plot_close(data):
     data['Close'].plot()
+    plt.xlabel('Time')
+    plt.ylabel('Price')
     plt.title("Price")
     plt.show()
 
 def plot_volume(data):
     data['Volume'].plot()
+    plt.xlabel('Time')
+    plt.ylabel('Volume')
     plt.title("Volume")
     plt.show()
 
@@ -68,6 +72,7 @@ def plot_daily_returns(data):
     daily_returns*=100
 
     daily_returns.plot()
+    plt.xlabel('Time')
     plt.ylabel("%")
     plt.title("Daily Returns")
     plt.show()
@@ -114,6 +119,7 @@ def plot_monthly_returns(data):
     monthly.plot()
 
     plt.title("Monthly returns")
+    plt.xlabel('Time')
     plt.ylabel("%")
     plt.show()
 
@@ -154,6 +160,7 @@ def plot_volatiliity(data):
 
     plt.legend()
     plt.title("Volatility")
+    plt.xlabel('Time')
     plt.ylabel("%")
     plt.show()
 

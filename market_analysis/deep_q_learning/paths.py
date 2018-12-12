@@ -10,3 +10,6 @@ def get_log_dir():
 
 def get_scalars_path():
     return MAIN_DIRECTORY + '/environment/scalers/'
+
+def get_behavior_path():
+    return MAIN_DIRECTORY + '/'

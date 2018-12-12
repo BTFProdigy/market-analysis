@@ -1,5 +1,9 @@
+import cPickle
+from collections import namedtuple
+
 import numpy as np
 
+from market_analysis.deep_q_learning import paths
 from market_analysis.deep_q_learning.action import Action
 from market_analysis.deep_q_learning.deep_q import DeepQ
 from market_analysis.deep_q_learning.deep_q_statistics import DeepQStatistics
@@ -10,13 +14,7 @@ from market_analysis.deep_q_learning.neural_net import ActivationFunction
 from market_analysis.deep_q_learning.neural_net.neural_network import NeuralNetwork
 from market_analysis.deep_q_learning.replay_memory import ReplayMemory
 
-
-def conf(hidden_nodes1, hidden_nodes2, act_f1, act_f2):
-    return {"hidden_nodes1": hidden_nodes1,
-            "hidden_nodes2": hidden_nodes2,
-            'act_f1': act_f1,
-            'act_f2': act_f2}
-
+Conf = namedtuple('Conf', ['hidden_nodes1', 'hidden_nodes2', 'act_f1', 'act_f2'])
 
 class TestAndValidation:
     def __init__(self, env_builder, num_of_stocks, budget, tester):
@@ -47,10 +45,13 @@ class TestAndValidation:
 
     def train_validate_test(self, data):
         train_data, val_data, test_data = self.split_train_validation_test(data)
-        confs = [conf(20, 20, ActivationFunction.Relu, ActivationFunction.Relu),
-                 conf(20, 20, ActivationFunction.Tanh, ActivationFunction.Tanh),
-                 conf(10, 10, ActivationFunction.Relu, ActivationFunction.Relu),
-                 conf(10, 10, ActivationFunction.Tanh, ActivationFunction.Tanh)]
+
+        confs_parameters= [(20, 20, ActivationFunction.Relu, ActivationFunction.Relu),
+                          (20, 20, ActivationFunction.Tanh, ActivationFunction.Tanh),
+                          (10, 10, ActivationFunction.Relu, ActivationFunction.Relu),
+                          (10, 10, ActivationFunction.Tanh, ActivationFunction.Tanh)]
+
+        confs = [Conf(*conf_parameters) for conf_parameters in confs_parameters]
 
         models = self.train(confs, train_data)
 
@@ -75,7 +76,7 @@ class TestAndValidation:
 
     def train_test(self, data):
         train_data, test_data = self.split_train_test(data)
-        confs = [conf(20, 20, ActivationFunction.Relu, ActivationFunction.Relu)]
+        confs = [Conf(20, 20, ActivationFunction.Relu, ActivationFunction.Relu)]
 
         net = self.train(confs, train_data)[0]
         self.test(net, test_data)
@@ -108,9 +109,8 @@ class TestAndValidation:
         mem = ReplayMemory(2000)
         evaluation = Evaluation()
         statistics = DeepQStatistics(env.get_num_of_states_per_training_episode())
-        nn = self.create_net(env.num_of_features, num_of_actions,
-                             conf['hidden_nodes1'], conf['hidden_nodes2'],
-                             conf['act_f1'], conf['act_f2'])
+
+        nn = self.create_net(env.num_of_features, num_of_actions, *conf)
 
         num_of_iterations = 3
         epsilon_strategy = GreedyStrategy(num_of_actions, num_of_iterations, env.get_num_of_states_per_training_episode())
@@ -122,5 +122,31 @@ class TestAndValidation:
 
         return deep_q.neural_network
 
+    def test_existing_model(self, model, data):
+        model = self.restore_model(model)
+        return self.test(model, data)
+
+    def validate_existing_models(self,models_names, data):
+        models = []
+        for model_name in models_names:
+            model = self.restore_model(model_name)
+            models.append(model)
+        return self.validate(models, data)
+
+
+    def load_model_parameters(self, file_name):
+        with open(file_name, 'rb') as file:
+            return cPickle.load(file)
+
+    def restore_model(self, model):
+        model_path = paths.get_models_path()+model
+        model_parameters = self.load_model_parameters(model_path + "parameters")
+        nn = NeuralNetwork(model_parameters.input_size, model_parameters.output_size,
+                           model_parameters.num_hidden_nodes1, model_parameters.num_hidden_nodes2,
+                           model_parameters.activation_function1, model_parameters.activation_function2)
+
+        # nn = NeuralNetwork(*model_parameters.__dict__.values)
+        nn = nn.restore_model(model_path + "model")
+        return nn
 
 

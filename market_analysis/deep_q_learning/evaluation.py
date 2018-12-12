@@ -16,7 +16,8 @@ class Evaluation:
         actions_buy = data_and_actions[actions.Action ==Action.Buy]
         actions_sell = data_and_actions[actions.Action==Action.Sell]
 
-        price.plot()
+        ax = price.plot()
+        ax.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
         plt.plot(actions_buy['Close'], "ro")
         plt.plot(actions_sell['Close'], "go")
         plt.show()
@@ -64,6 +65,8 @@ class Evaluation:
     def plot_statistics(self, list, ylabel, xlabel = "Iteration"):
         x = range(list.__len__())
         plt.plot(x, list)
+
+        plt.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
         plt.ylabel(ylabel)
         plt.xlabel(xlabel)
         plt.title(ylabel)
@@ -82,6 +85,8 @@ class Evaluation:
         instances = range(len(actions))
         plt.scatter(instances, rewards, c=colors, alpha=0.3,
                     cmap='viridis')
+        plt.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
+
         plt.colorbar()  # show color scale
 
         plt.show()
@@ -90,6 +95,8 @@ class Evaluation:
 
         plt.scatter(map(lambda x: int(x), actions), rewards, alpha=0.3,
                     cmap='viridis')
+        plt.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
+
 
         plt.show()
 

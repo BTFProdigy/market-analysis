@@ -12,10 +12,13 @@ class PostprocessingSteps:
         pred = pd.DataFrame(predictions, copy=True)
         cumsum = pred.cumsum()
 
-        for column in data.columns:
-            cumsum[column] = cumsum[column].apply(lambda x: x + data[column].ix[-1])
-            if number == 2:
-                cumsum[column] = cumsum[column].apply(lambda x: x + data[column].diff().ix[-1])
+        # for column in data.columns:
+        #     cumsum[column] = cumsum[column].apply(lambda x: x + data[column].ix[-1])
+        #     if number == 2:
+        #         cumsum[column] = cumsum[column].apply(lambda x: x + data[column].diff().ix[-1])
+
+
+        cumsum= cumsum.apply(lambda x: x + data.ix[-1])
         return cumsum
 
     def postprocess(self, forecasted, original_data):

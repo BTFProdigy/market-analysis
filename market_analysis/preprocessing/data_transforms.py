@@ -32,7 +32,7 @@ class DataTransforms:
         return d
 
     def remove_outliers_for_column(self, column_data, num_std=2):
-        a = abs(column_data-column_data.mean()) > num_std * column_data.std()
+        # a = abs(column_data-column_data.mean()) > num_std * column_data.std()
         column_data[abs(column_data-column_data.mean()) > num_std * column_data.std()] = None
         self.fill_missing_data(column_data)
 

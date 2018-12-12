@@ -1,6 +1,6 @@
 import pandas as pd
 
-from market_analysis.predictions.algorithm.arima import SARIMAX
+from market_analysis.predictions.algorithm.arima import Arima
 from market_analysis.predictions import ModelConfiguration, ModelEvaluator
 from market_analysis.postprocessing import PostprocessingSteps
 from market_analysis.preprocessing import PreprocessingSteps
@@ -8,11 +8,12 @@ from market_analysis.preprocessing import PreprocessingSteps
 
 class RollingForwardCrossValidation:
     def __init__(self):
-        self.predictor = SARIMAX()
+        self.predictor = Arima()
         self.predicted = pd.DataFrame()
         self.model_evaluator = ModelEvaluator()
 
     def validation(self, test_set_size, data):
+
         self.rmses = []
         self.mapes = []
         prediction_counter = 0
@@ -20,6 +21,7 @@ class RollingForwardCrossValidation:
         # training_data_len = 80
         max_data = data.__len__()
         while (training_data_len < max_data):
+            print training_data_len, max_data
             configuration = ModelConfiguration()
             num_of_predictions_ahead = configuration.transformation_parameters["predictions_ahead"]
             training_data = data[:training_data_len]
@@ -33,6 +35,7 @@ class RollingForwardCrossValidation:
                 print training_data_len
             except ValueError, e:
                 print e.message
+        # self.predicted.columns = data.columns
 
         self.model_evaluator.evaluate_model(self.predicted, data)
 

@@ -8,10 +8,10 @@ class StationarityChecker:
 
         dfoutput = pd.Series(dftest[0:4], index=['Test Statistic','p-value','#Lags Used','Number of Observations Used'])
         test_statistic = dfoutput['Test Statistic']
-        print "PP " + str(dfoutput['p-value'])
+        # print "PP " + str(dfoutput['p-value'])
         critical_value = dftest[4]['5%']
-        print "Test statistic: " +timeseries.name + " "+ str(test_statistic)
-        print "Critical value " + str(critical_value)
+        # print "Test statistic: " +timeseries.name + " "+ str(test_statistic)
+        # print "Critical value " + str(critical_value)
         return test_statistic < critical_value
 
     def are_all_series_stationary(self, data_frame):

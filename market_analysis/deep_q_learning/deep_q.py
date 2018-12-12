@@ -9,7 +9,7 @@ BATCH_SIZE = 32
 
 class DeepQ:
 
-    def __init__(self, neural_network, environment, replay_memory, statistics, num_of_actions, num_of_states, epsilon_strategy, num_of_iterations):
+    def __init__(self, neural_network, environment, replay_memory, statistics, num_of_actions, num_of_states, epsilon_strategy, num_of_iterations, target_net):
 
         self.num_of_iterations = num_of_iterations
         self.gamma = 0.97
@@ -23,6 +23,9 @@ class DeepQ:
         self.epsilon_strategy = epsilon_strategy
 
         self.neural_net_logger = NeuralNetLogger(neural_network)
+
+        self.target_neural_network = target_net
+        self.updating_target_freq = 200
 
     def choose_action(self, state):
         self.epsilon = self.epsilon_strategy.get_epsilon()
@@ -96,7 +99,7 @@ class DeepQ:
         self.num_of_random_actions = 0
 
     def one_iteration(self):
-        total_reward = 0
+
         rewards = []
         actions = []
         budget = []
@@ -113,12 +116,11 @@ class DeepQ:
             self.replay_memory.add((state, action, reward, next_state))
             self.replay()
             rewards.append(reward)
-            total_reward += reward
-
 
             agent_state = self.environment.agent_state
             budget.append(agent_state.budget)
             stocks.append(agent_state.num_of_stocks)
+
             if done:
                 break
 
@@ -133,6 +135,9 @@ class DeepQ:
         print q_predict_states[:, 0]
 
     def replay(self):
+        if self.epsilon_strategy.steps % self.updating_target_freq == 0:
+            self.copy_weights()
+
         batch = self.replay_memory.sample(BATCH_SIZE)
         states = np.array([exp_tuple[0] for exp_tuple in batch])
 
@@ -145,12 +150,18 @@ class DeepQ:
 
 
         q_values = self.neural_network.predict_batch(states)
-        q_values_next = self.neural_network.predict_batch(next_states)
+        q_values_next = self.target_neural_network.predict_batch(next_states)
 
         # if self.iteration == self.num_of_iterations-1:
         # print q_values
 
         self.update_q_values_and_train_net(batch, q_values, q_values_next)
+
+
+
+            # print np.array(self.neural_network.weights[0].eval(session = self.neural_network.session))
+            # print self.target_neural_network.weights[0]
+            # print self.neural_network.weights[0].eval(session = self.neural_network.session) == self.target_neural_network.weights[0]
 
     def update_q_values_and_train_net(self, batch, q_values, q_values_next):
         grouped_batch = zip(*batch)
@@ -161,16 +172,16 @@ class DeepQ:
 
         full_rewards = rewards+self.gamma*np.amax(q_values_next, axis = 1)
         # print q_values
+        # print actions
         q_values[range(len(states)),list(actions)] = full_rewards
         # print q_values
-        # for i, exp_tuple in enumerate(batch):
-        #     state, action, reward, next_state = exp_tuple
-        #
-        #     q_values[i][action] = (reward + self.gamma*np.max(q_values_next[i])
-        #     )
+
         self.neural_network.train(states, q_values)
         # self.neural_net_logger.log_performance(states, q_values, self.iteration)
 
+    def copy_weights(self):
+        weights, biases = self.neural_network.get_weights_and_biases()
+        self.target_neural_network.copy_weights_and_biases(weights, biases)
 
     # def test(self, test_environment):
     #

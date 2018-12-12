@@ -32,7 +32,7 @@ class Reward:
         # r = state_tuple.data
 
         # r = max(p1+d1*n1-p0-n0*d0, 0)
-        #
+
 
         # if p0<=d0 and action == Action.Buy:
         #     r = -15
@@ -52,7 +52,7 @@ class Reward:
         # elif n0<=1 and action == Action.Sell:
         #     r = -10
         if p1<=0 or n1<=0:
-            r = -10
+            r = -100
 
         # if new_state_tuple.profit <= 0:
             # r= -abs(r)*2

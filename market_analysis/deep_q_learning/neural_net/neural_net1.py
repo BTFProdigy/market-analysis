@@ -8,7 +8,8 @@ from market_analysis.deep_q_learning.neural_net import ActivationFunction
 from market_analysis.deep_q_learning.neural_net.model_parameters import ModelParameters
 import matplotlib.pyplot as plt
 import market_analysis.deep_q_learning.paths as paths
-class NeuralNetwork:
+
+class NeuralNet:
 
     def __init__(self, num_of_states, num_of_actions, hidden_nodes_layer1, hidden_nodes_layer2, activation_function1, acivation_function2):
         self.num_of_states = num_of_states
@@ -19,6 +20,9 @@ class NeuralNetwork:
         self.activation_func1 = activation_function1
         self.activation_func2 = acivation_function2
 
+        self.weights = [0]*3
+        self.biases = [0]*3
+
         self.setup_net(num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions)
 
         # tf.reset_default_graph()
@@ -27,7 +31,6 @@ class NeuralNetwork:
         self.session.run(tf.global_variables_initializer())
 
         self.losses = []
-        # self.writer = self.create_writer()
 
     def get_architecture_string(self):
         return '%i_%i_%s_%s' % (self.hidden_nodes1, self.hidden_nodes2, self.activation_func1, self.activation_func2)
@@ -37,16 +40,25 @@ class NeuralNetwork:
         self.target_q = tf.placeholder(dtype=tf.float32, shape=[None, num_of_actions], name="target_q" )
 
         with tf.name_scope('layers'):
+            self.weights[0] = tf.Variable(tf.random_uniform([num_of_states, hidden_nodes_layer1]), dtype=tf.float32)
+            self.biases[0] = tf.Variable(tf.random_uniform([hidden_nodes_layer1]))
 
+            self.weights[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer1, hidden_nodes_layer2]), dtype=tf.float32)
+            self.biases[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer2]))
 
-            layer1 = tf.layers.dense(self.states, hidden_nodes_layer1, activation=self.get_activation_function(self.activation_func1))
-            layer2 = tf.layers.dense(layer1, hidden_nodes_layer2, activation=self.get_activation_function(self.activation_func2))
-            layer3 = tf.layers.dense(layer2, 8, activation=self.get_activation_function(self.activation_func2))
+            # self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, 8]), dtype=tf.float32)
+            # self.biases[2] = tf.Variable(tf.random_uniform([8]))
 
-            # tf.summary.histogram("layer2", layer2)
+            self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, num_of_actions]), dtype=tf.float32)
+            self.biases[2] = tf.Variable(tf.random_uniform([num_of_actions]))
 
-            init = tf.random_uniform_initializer(minval=-0.05, maxval=0.05)
-            self.predicted_q = tf.layers.dense(layer3, num_of_actions, kernel_initializer=init)
+            act1= self.get_activation_function(self.activation_func1)
+            act2 = self.get_activation_function(self.activation_func2)
+
+            A1 = act1(tf.matmul(self.states, self.weights[0]))
+            A2 = act2(tf.matmul(A1, self.weights[1]) )
+            # A3 = act2(tf.matmul(A2, self.weights[2]))
+            self.predicted_q = tf.matmul(A2, self.weights[2])
 
             tf.summary.histogram("predicted", self.predicted_q)
 
@@ -60,9 +72,24 @@ class NeuralNetwork:
         #                                            100000, 0.96, staircase=True)
 
         with tf.name_scope("training"):
+            # self.optimizer = tf.train.ProximalAdagradOptimizer(
+            #     learning_rate=0.01,
+            #     l1_regularization_strength=0.01,
+            #     l2_regularization_strength=0.01).minimize(self.loss)
             self.optimizer = tf.train.AdamOptimizer().minimize(self.loss)
 
         # self.optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
+
+    def get_weights_and_biases(self):
+        return self.session.run([self.weights, self.biases])
+
+    def copy_weights_and_biases(self, weights, biases):
+        # w = weights[:]
+        # # print self.weights
+        # b = biases[:]
+        for i in range(3):
+            self.weights[i].assign(tf.Variable(weights[i]))
+            self.biases[i].assign(tf.Variable(biases[i]))
 
     def train(self, states, target_q):
         _, loss = self.session.run([self.optimizer, self.loss], feed_dict={self.states: states, self.target_q: target_q})
@@ -77,7 +104,7 @@ class NeuralNetwork:
 
     def predict(self, state):
         return self.session.run(self.predicted_q, feed_dict={self.states:
-                                                            state.reshape(1, self.num_of_states)})
+                                                                 state.reshape(1, self.num_of_states)})
 
     def predict_batch(self, states):
 
@@ -96,11 +123,3 @@ class NeuralNetwork:
     def restore_model(self, path):
         self.saver.restore(self.session, path)
         return self
-
-    def get_weights(self):
-        w0= tf.get_variable('layer1/kernel')
-        return w0
-
-    def set_weights(self):
-        w0= tf.set_('layer1/kernel')
-        return w0

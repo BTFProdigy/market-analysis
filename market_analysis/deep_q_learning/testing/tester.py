@@ -1,14 +1,16 @@
 import numpy as np
-
+import pandas as pd
 from market_analysis.deep_q_learning.agents_behavior_saver import AgentsBehaviorSaver
 from market_analysis.deep_q_learning.evaluation import Evaluation
 
 class Tester:
 
     def pass_through_data(self, env, nn):
+
         total_reward = 0
         actions = []
         rewards = []
+        bu
         while True:
             state = env.curr_state
 
@@ -29,9 +31,10 @@ class Tester:
 
     def test(self, model, env, data):
         evaluation = Evaluation()
-        behavior_saver = AgentsBehaviorSaver()
+
         total_reward, actions, rewards = self.pass_through_data(env, model)
-        behavior_saver.save(actions, rewards)
+
+        self.save_agents_behavior(actions, rewards, data.index)
         agent_state = env.agent_state
         print '''Budget: {},
                 Num of stocks: {},
@@ -41,3 +44,9 @@ class Tester:
 
         evaluation.plot_actions_during_time(data['Close'], actions)
         return total_reward, agent_state.budget, agent_state.num_of_stocks
+
+    def save_agents_behavior(self, actions, rewards, index):
+        behavior_saver = AgentsBehaviorSaver()
+        actions_series = pd.Series(actions, index = index, name='Actions')
+        rewards_series = pd.Series(rewards, index = index, name = 'Rewards')
+        behavior_saver.save(actions_series, rewards_series)

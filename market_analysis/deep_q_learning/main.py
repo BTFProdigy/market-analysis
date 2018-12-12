@@ -16,6 +16,7 @@ from market_analysis.deep_q_learning.exploration.greedy_strategy import GreedySt
 from market_analysis.deep_q_learning.data.db_worker import DBWorker
 from market_analysis.deep_q_learning.local_agents_environment.null_action_performer import NullActionPerformer
 from market_analysis.deep_q_learning.neural_net import ActivationFunction
+from market_analysis.deep_q_learning.neural_net.neural_net1 import NeuralNet
 from market_analysis.deep_q_learning.neural_net.neural_network import NeuralNetwork
 from market_analysis.deep_q_learning.replay_memory import ReplayMemory
 from market_analysis.deep_q_learning.reward import Reward
@@ -54,7 +55,7 @@ def create_env(data, preprocessor):
 def create_net(num_of_features, num_of_actions):
     hidden_nodes1 = 32
     hidden_nodes2 = 32
-    nn = NeuralNetwork(num_of_features, num_of_actions, hidden_nodes1, hidden_nodes2, ActivationFunction.Relu, ActivationFunction.Relu)
+    nn = NeuralNet(num_of_features, num_of_actions, hidden_nodes1, hidden_nodes2, ActivationFunction.Relu, ActivationFunction.Relu)
     return nn
 
 def train():
@@ -67,10 +68,11 @@ def train():
     evaluation = Evaluation()
     statistics = DeepQStatistics(env.get_num_of_states_per_training_episode())
     nn =create_net(env.num_of_features, num_of_actions)
+    target_net = create_net(env.num_of_features, num_of_actions)
 
     num_of_iterations = 200
     epsilon_strategy = GreedyStrategy(num_of_actions, num_of_iterations, env.get_num_of_states_per_training_episode())
-    deep_q = DeepQ(nn, env, mem, statistics, num_of_actions, env.num_of_features, epsilon_strategy, num_of_iterations)
+    deep_q = DeepQ(nn, env, mem, statistics, num_of_actions, env.num_of_features, epsilon_strategy, num_of_iterations, target_net)
     deep_q.iterate_over_states()
 
     evaluation.plot_actions_during_time(data['Close'], statistics.actions_for_last_iteration)
@@ -82,25 +84,27 @@ def train():
                 Reward: {}, 
                 Num of stocks bought: {}, 
                 Num of stocks sold: {}'''.format(agent_state.budget,
-                                     agent_state.num_of_stocks,
-                                     statistics.rewards_history[-1],
+                                    agent_state.num_of_stocks,
+                                    statistics.rewards_history[-1],
                                     agent_state.num_of_stocks_bought,
-                                                 agent_state.num_of_stocks_sold)
-    nn.save_model(paths.get_models_path()+"model_novo4")
+                                    agent_state.num_of_stocks_sold)
+    nn.save_model(paths.get_models_path()+"model_novo4/")
 
 def test():
     reward = Reward(DataPreprocessor.get_instance())
     env_builder = EnvironmentBuilder(reward)
     data = import_data()
-    init_num_of_stocks, init_budget = 20, 1000
+    init_num_of_stocks, init_budget = 20, 3000
 
     tester = Tester()
     test = TestAndValidation(env_builder, init_num_of_stocks, init_budget, tester)
     # model = test.train_test(data)
-    model = test.train_validate_test(data)
-    model.save_model(paths.get_models_path()+"model_novo4")
 
-    DataPreprocessor.get_instance().save_scalars(paths.get_scalars_path())
+    test.test_existing_model("model_novo4", data)
+    # model = test.train_validate_test(data)
+    # model.save_model(paths.get_models_path()+"model_novo5")
+    #
+    # DataPreprocessor.get_instance().save_scalars(paths.get_scalars_path())
 
 def trade():
     trader = Trader("test")

@@ -99,12 +99,19 @@ class ModelEvaluator:
             print d
             predicted.drop(index = d, inplace=True)
 
-        for column in real.columns:
-            plt.scatter(real[column], predicted[column], alpha=0.5)
-            plt.title('Scatter plot ' + column)
-            plt.xlabel('x')
-            plt.ylabel('y')
-            plt.show()
+        # for column in real.columns:
+        #     plt.scatter(real[column], predicted[column], alpha=0.5)
+        #     plt.title('Scatter plot ' + column)
+        #     plt.xlabel('x')
+        #     plt.ylabel('y')
+        #     plt.show()
+        plt.scatter(real, predicted, alpha=0.5)
+        plt.title('Scatter plot ')
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.show()
+
+
 
     # def get_mape(self, predicted, real, lag_order):
     #
