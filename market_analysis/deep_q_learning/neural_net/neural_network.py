@@ -2,7 +2,11 @@ import tensorflow as tf
 
 import cPickle
 
+from keras import Sequential
+from keras.layers import Dense
+from keras.optimizers import Adam
 from tensorflow.python.ops.losses.losses_impl import Reduction
+
 
 from market_analysis.deep_q_learning.neural_net import ActivationFunction
 from market_analysis.deep_q_learning.neural_net.model_parameters import ModelParameters
@@ -20,7 +24,7 @@ class NeuralNetwork:
         self.activation_func2 = acivation_function2
 
         self.setup_net(num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions)
-
+        # self.setup_net1()
         # tf.reset_default_graph()
         self.session =  tf.Session()
         self.saver = tf.train.Saver()
@@ -32,16 +36,26 @@ class NeuralNetwork:
     def get_architecture_string(self):
         return '%i_%i_%s_%s' % (self.hidden_nodes1, self.hidden_nodes2, self.activation_func1, self.activation_func2)
 
+
+    def setup_net1(self):
+        model = Sequential()
+        model.add(Dense(units=16, input_dim=self.num_of_states, activation="relu"))
+        model.add(Dense(units=16, activation="relu"))
+        model.add(Dense(units=8, activation="relu"))
+        model.add(Dense(self.num_actions, activation="linear"))
+        model.compile(loss="mse", optimizer=Adam())
+        self.model = model
+
+
     def setup_net(self, num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions):
         self.states = tf.placeholder(shape=(None, num_of_states), dtype=tf.float32, name="states")
         self.target_q = tf.placeholder(dtype=tf.float32, shape=[None, num_of_actions], name="target_q" )
 
         with tf.name_scope('layers'):
 
-
             layer1 = tf.layers.dense(self.states, hidden_nodes_layer1, activation=self.get_activation_function(self.activation_func1))
             layer2 = tf.layers.dense(layer1, hidden_nodes_layer2, activation=self.get_activation_function(self.activation_func2))
-            layer3 = tf.layers.dense(layer2, 8, activation=self.get_activation_function(self.activation_func2))
+            layer3 = tf.layers.dense(layer2, 6, activation=self.get_activation_function(self.activation_func2))
 
             # tf.summary.histogram("layer2", layer2)
 
@@ -65,6 +79,7 @@ class NeuralNetwork:
         # self.optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
 
     def train(self, states, target_q):
+        # self.model.fit(states, target_q, epochs=1, verbose=0)
         _, loss = self.session.run([self.optimizer, self.loss], feed_dict={self.states: states, self.target_q: target_q})
         self.losses.append(loss)
 
@@ -76,11 +91,13 @@ class NeuralNetwork:
             return tf.nn.tanh
 
     def predict(self, state):
+        # p = self.model.predict(state.reshape(1, self.num_of_states))
+        # return self.model.predict(state.reshape(1, self.num_of_states))
         return self.session.run(self.predicted_q, feed_dict={self.states:
                                                             state.reshape(1, self.num_of_states)})
 
     def predict_batch(self, states):
-
+        # predicted = self.model.predict(states)
         predicted =  self.session.run(self.predicted_q, feed_dict={self.states: states})
         return predicted
 

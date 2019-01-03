@@ -12,7 +12,7 @@ tfc = TechnicalFeaturesCalculator()
 matplotlib.rcParams['axes.color_cycle'] = ['orchid', 'darkblue', 'gold']
 
 def plot_close(data):
-    data['Close'].plot()
+    data['Price'].plot()
     plt.xlabel('Time')
     plt.ylabel('Price')
     plt.title("Price")
@@ -26,7 +26,7 @@ def plot_volume(data):
     plt.show()
 
 def plot_rolling_mean_and_std(data, window):
-    price = data['Close']
+    price = data['Price']
     rolmean = price.rolling(window=window, center=False).mean()
 
     rolstd = price.rolling(window=window).std()
@@ -40,8 +40,8 @@ def plot_rolling_mean_and_std(data, window):
     plt.show()
 
 def get_daily_returns_related_to_market(prices, market_prices):
-    prices = prices["Close"]
-    market_prices = market_prices["Close"]
+    prices = prices["Price"]
+    market_prices = market_prices["Price"]
 
     daily_returns = returns_statistics.compute_returns(prices)
     market_daily_returns = returns_statistics.compute_returns(market_prices)
@@ -61,13 +61,13 @@ def get_daily_returns_related_to_market(prices, market_prices):
     return
 
 def plot_daily_returns_hist(data):
-    prices = data['Close']
+    prices = data['Price']
     daily_returns = returns_statistics.compute_returns(prices)
 
     histogram_daily_return(daily_returns)
 
 def plot_daily_returns(data):
-    prices = data['Close']
+    prices = data['Price']
     daily_returns = returns_statistics.compute_returns(prices)
     daily_returns*=100
 
@@ -97,15 +97,15 @@ def plot_correlation_matrix(data):
 
 
 def plot_price_and_volume(data):
-    data['Close'].plot(label = "Close")
-    normalized_volume = data['Volume']*data['Close'].ix[0]/data['Volume'].ix[0]
+    data['Price'].plot(label = "Price")
+    normalized_volume = data['Volume']*data['Price'].ix[0]/data['Volume'].ix[0]
     normalized_volume.plot(label = "Normalized Volume")
-    plt.title("Close Price and Volume Normalized")
+    plt.title("Price and Volume Normalized")
     plt.legend()
     plt.show()
 
 def plot_close_high_low(data):
-    data['Close'].plot(label = "Close")
+    data['Price'].plot(label = "Price")
     data['Low'].plot(label = "Low")
     data['High'].plot(label = "High")
     data['Open'].plot(label = "Open")
@@ -114,7 +114,7 @@ def plot_close_high_low(data):
     plt.show()
 
 def plot_monthly_returns(data):
-    monthly = returns_statistics.get_monthly_returns(data["Close"])
+    monthly = returns_statistics.get_monthly_returns(data["Price"])
     monthly*=100
     monthly.plot()
 
@@ -124,14 +124,14 @@ def plot_monthly_returns(data):
     plt.show()
 
 def plot_open_close(data):
-    data['Close'].plot(label = "Close")
+    data['Price'].plot(label = "Price")
     data['Open'].plot(label = "Open")
     plt.title("Open & Close")
     plt.legend()
     plt.show()
 
 def plot_trend(data):
-    price = data['Close']
+    price = data['Price']
     rolmean = price.rolling(window=90).mean()
 
     price.plot( color='blue', label='Original')
@@ -142,11 +142,11 @@ def plot_trend(data):
     plt.show()
 
 def plot_bolinger_bands(data):
-    close = data["Close"]
+    close = data["Price"]
     bolinger_bands = tfc.get_bolinger_bands(close)
     bolinger_bands[0].plot(label = "Lower Band", linestyle="dashed")
     bolinger_bands[1].plot(label = "Upper Band", linestyle="dashed")
-    close.plot(label = "Close")
+    close.plot(label = "Price")
 
     plt.legend()
     plt.title("Bolinger Bands")
@@ -154,7 +154,7 @@ def plot_bolinger_bands(data):
 
 
 def plot_volatiliity(data):
-    volatility = tfc.get_rolling_volatility(data["Close"], 10)
+    volatility = tfc.get_rolling_volatility(data["Price"], 10)
     volatility*=100
     volatility.plot(label = "Volatility")
 

@@ -9,8 +9,8 @@ class DateFrameBuilder:
         self.tfc = TechnicalFeaturesCalculator()
 
         self.data = data
-        self.close_prices = self.data['Close']
-
+        self.close_prices = self.data['Price']
+        # self.close_prices.columns = ['Price']
         self.dataframe = pd.DataFrame()
         self.dataframe = pd.concat([self.close_prices], axis =1)
 
@@ -73,23 +73,23 @@ class DateFrameBuilder:
         return self
 
     def add_returns(self):
-        self.dataframe["Returns"] = self.tfc.get_returns(self.data.Close)
+        self.dataframe["Returns"] = self.tfc.get_returns(self.data.Price)
         return self
 
     def add_cummulative_daily_returns(self):
-        self.dataframe["Cummulative Returns"] = self.tfc.get_cummulative_returns(self.data.Close)
+        self.dataframe["Cummulative Returns"] = self.tfc.get_cummulative_returns(self.data.Price)
         return self
 
     def add_weekly_returns(self):
         df = pd.DataFrame()
-        df['Weekly Returns'] = self.tfc.get_weekly_returns(self.data.Close)
+        df['Weekly Returns'] = self.tfc.get_weekly_returns(self.data.Price)
         self.dataframe = pd.concat([self.dataframe, df]).bfill()
 
         return self
 
     def add_daily_returns(self):
         df = pd.DataFrame()
-        df['Daily Returns'] = self.tfc.get_daily_returns(self.data.Close)
+        df['Daily Returns'] = self.tfc.get_daily_returns(self.data.Price)
 
         self.dataframe = pd.concat([self.dataframe, df]).bfill()
         return self

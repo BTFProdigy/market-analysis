@@ -10,6 +10,9 @@ class ReplayMemory:
     def add(self, experience_tuple):
         self.buffer.append(experience_tuple)
 
+    def get_size(self):
+        return len(self.buffer)
+
     def sample(self, batch_size):
         buffer_size = len(self.buffer)
 

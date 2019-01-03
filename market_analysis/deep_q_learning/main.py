@@ -27,6 +27,8 @@ from datetime import datetime as dt
 from market_analysis.deep_q_learning.trader import Trader
 
 import paths
+
+model_name = "model_random1/"
 def import_data():
     # data_reader = DataReaderImpl()
     # data = data_reader.read_data("/home/nissatech/Documents/Market Analysis Data/prices/Data/Stocks/",
@@ -36,7 +38,7 @@ def import_data():
     db_worker = DBWorker()
     start_date = dt.strptime("2018-11-24 15:00:00", '%Y-%m-%d %H:%M:%S')
 
-    end_date = dt.strptime("2018-11-24 19:00:00", '%Y-%m-%d %H:%M:%S')
+    end_date = dt.strptime("2018-11-24 21:00:00", '%Y-%m-%d %H:%M:%S')
     data = db_worker.get_trades_for_period('BTC-EUR', start_date, end_date)
     # data = data.resample('30s').mean()
     # data = db_worker.get_trades('BTC-EUR', 50)
@@ -45,7 +47,7 @@ def import_data():
 def create_env(data, preprocessor):
     reward = Reward(preprocessor)
     env_builder = EnvironmentBuilder(reward)
-    initial_budget = 40000
+    initial_budget = 50000
     initial_stocks = 30
 
     env = env_builder.build_train_environment(initial_stocks, initial_budget, data, preprocessor)
@@ -53,29 +55,30 @@ def create_env(data, preprocessor):
     return env
 
 def create_net(num_of_features, num_of_actions):
-    hidden_nodes1 = 32
-    hidden_nodes2 = 32
-    nn = NeuralNet(num_of_features, num_of_actions, hidden_nodes1, hidden_nodes2, ActivationFunction.Relu, ActivationFunction.Relu)
+    hidden_nodes1 = 12
+    hidden_nodes2 = 12
+    nn = NeuralNetwork(num_of_features, num_of_actions, hidden_nodes1, hidden_nodes2, ActivationFunction.Relu, ActivationFunction.Relu)
     return nn
 
 def train():
     num_of_actions = Action.num_of_actions
 
     data = import_data()
-    env = create_env(data, DataPreprocessor.get_instance())
-
-    mem = ReplayMemory(2000)
+    data_preprocessor = DataPreprocessor.get_instance()
+    env = create_env(data, data_preprocessor)
+    # data_preprocessor.save_scalars(paths.get_scalars_path())
+    mem = ReplayMemory(1000)
     evaluation = Evaluation()
     statistics = DeepQStatistics(env.get_num_of_states_per_training_episode())
-    nn =create_net(env.num_of_features, num_of_actions)
+    nn = create_net(env.num_of_features, num_of_actions)
     target_net = create_net(env.num_of_features, num_of_actions)
 
-    num_of_iterations = 200
+    num_of_iterations = 50
     epsilon_strategy = GreedyStrategy(num_of_actions, num_of_iterations, env.get_num_of_states_per_training_episode())
     deep_q = DeepQ(nn, env, mem, statistics, num_of_actions, env.num_of_features, epsilon_strategy, num_of_iterations, target_net)
     deep_q.iterate_over_states()
 
-    evaluation.plot_actions_during_time(data['Close'], statistics.actions_for_last_iteration)
+    evaluation.plot_actions_during_time(data['Price'], statistics.actions_for_last_iteration)
     evaluation.evaluate(statistics)
 
     agent_state = env.agent_state
@@ -88,32 +91,44 @@ def train():
                                     statistics.rewards_history[-1],
                                     agent_state.num_of_stocks_bought,
                                     agent_state.num_of_stocks_sold)
-    nn.save_model(paths.get_models_path()+"model_novo4/")
+
+    nn.save_model(paths.get_models_path()+model_name)
+
+
+def import_test_data():
+    db_worker = DBWorker()
+    start_date = dt.strptime("2018-11-24 20:00:00", '%Y-%m-%d %H:%M:%S')
+
+    end_date = dt.strptime("2018-11-24 23:00:00", '%Y-%m-%d %H:%M:%S')
+    data = db_worker.get_trades_for_period('BTC-EUR', start_date, end_date)
+    # data = data.resample('30s').mean()
+    # data = db_worker.get_trades('BTC-EUR', 50)
+    return data
 
 def test():
     reward = Reward(DataPreprocessor.get_instance())
     env_builder = EnvironmentBuilder(reward)
-    data = import_data()
-    init_num_of_stocks, init_budget = 20, 3000
+    data = import_test_data()
+    init_num_of_stocks, init_budget = 20, 40000
 
     tester = Tester()
     test = TestAndValidation(env_builder, init_num_of_stocks, init_budget, tester)
     # model = test.train_test(data)
 
-    test.test_existing_model("model_novo4", data)
+    test.test_existing_model("model_novo14/", data)
     # model = test.train_validate_test(data)
     # model.save_model(paths.get_models_path()+"model_novo5")
     #
     # DataPreprocessor.get_instance().save_scalars(paths.get_scalars_path())
 
 def trade():
-    trader = Trader("test")
+    trader = Trader("test", False)
     action_performer = NullActionPerformer()
     num_of_stocks= 10
     budget = 20000
 
     agent_state = AgentState(num_of_stocks, budget)
-    trader.trade(agent_state, "BTC-EUR", action_performer, "")
+    trader.trade(agent_state, "BTC-EUR", action_performer, "model_novo14/")
 
 train()
 # test()

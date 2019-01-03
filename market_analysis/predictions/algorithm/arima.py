@@ -22,11 +22,12 @@ class Arima:
     def create_model(self, endog):
         self.data = endog.copy()
         self.data.dropna(inplace=True)
-        # self.plot_acf(self.data.diff().dropna())
-        # self.plot_pacf(self.data.diff().dropna())
+        self.plot_acf(self.data.diff().dropna())
+        self.plot_pacf(self.data.diff().dropna())
+
         # self.data.index = pd.DatetimeIndex(self.data.index)
         d = 0
-        self.examine_process_order(self.data, 0, 0)
+        self.examine_process_order(self.data, 0, 1)
 
         # model = sm.tsa.statespace.SARIMAX(self.data.values,
         #                                   trend='n',
@@ -38,30 +39,30 @@ class Arima:
 
 
     def examine_process_order(self, endog, seasonal_d, d):
-        min_aic = 99999999
-        pq = self.get_p_q_combinations()
-
-        for combination in pq:
-            print combination
-            try:
-                model = sm.tsa.statespace.SARIMAX(endog.values,
-
-                                                  order=(combination[0], d, combination[1]),
-                                                  seasonal_order=(0, seasonal_d, 0, 0))
-
-                results = model.fit(disp=False)
-                if results.aic < min_aic:
-                    print min_aic
-                    min_aic = results.aic
-                    min_param = combination
-            except Exception, e:
-                continue
+        # min_aic = 99999999
+        # pq = self.get_p_q_combinations()
+        #
+        # for combination in pq:
+        #     print combination
+        #     try:
+        #         model = sm.tsa.statespace.SARIMAX(endog.values,
+        #
+        #                                           order=(combination[0], d, combination[1]),
+        #                                           seasonal_order=(2, seasonal_d, 0, 1440))
+        #
+        #         results = model.fit(disp=False)
+        #         if results.aic < min_aic:
+        #             print min_aic
+        #             min_aic = results.aic
+        #             min_param = combination
+        #     except Exception, e:
+        #         continue
 
         model = sm.tsa.statespace.SARIMAX(endog.values,
 
                                           trend='n',
-                                          order=(min_param[0], d, min_param[1]),
-                                          seasonal_order=(0, 0, 0, 0))
+                                          order=(1, d, 1),
+                                          seasonal_order=(1, 0, 0, 12))
 
         self.results = model.fit()
         # print(self.results.summary())
@@ -92,8 +93,8 @@ class Arima:
         forecasted_formatted = [float(format(value, 'f')) for value in pred]
         forecasted_frame = pd.DataFrame(forecasted_formatted, columns = self.data.columns)
 
-        forecasted_frame.index = self.get_n_future_timestamps(self.data.index[-1], 30, steps)
-        return forecasted_frame.apply(np.round)
+        # forecasted_frame.index = self.get_n_future_timestamps(self.data.index[-1], 30, steps)
+        # return forecasted_frame.apply(np.round)
         return pred
 
 
@@ -141,7 +142,7 @@ class Arima:
     #     return pq
 
     def get_fitted_values(self):
-        return pd.DataFrame(self.results.fittedvalues, copy=True).apply(np.round)
+        return pd.DataFrame(self.results.fittedvalues, index = self.data.index, copy=True).apply(np.round)
         return self.results.fittedvalues
 
     def get_seasonality(self, offset_in_seconds):
@@ -151,12 +152,12 @@ class Arima:
         return 24*60*60/offset_in_seconds
 
     def plot_acf(self, series):
-        plot_acf(series, lags=10)
+        plot_acf(series, lags=40)
         plt.title("ACF")
         plt.show()
 
     def plot_pacf(self, series):
-        plot_pacf(series, lags = 10)
+        plot_pacf(series, lags = 40)
         plt.title("PACF")
         plt.show()
 

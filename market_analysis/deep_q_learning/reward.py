@@ -3,59 +3,82 @@ from collections import namedtuple
 from market_analysis.deep_q_learning.action import Action
 import math
 import numpy as np
-State = namedtuple('State', ['data', 'stocks', 'profit'])
+State = namedtuple('State', ['data', 'stocks','profit', 'inv'])
+# State = namedtuple('State', ['data', 'stocks','inv'])
 
 class Reward:
 
-    def __init__(self, preprocessor, min_value=-1, max_value=1 ):
+    def __init__(self, preprocessor):
         self.preprocessor = preprocessor
-        self.min_value = min_value
-        self.max_value = max_value
 
+    # za cenu dodati min
     def get_reward(self, state, action, new_state):
         new_state_tuple = State(*new_state)
         state_tuple = State(*state)
-        # r = new_state_tuple.profit+new_state_tuple.stocks*new_state_tuple.data- \
-        #     state_tuple.profit-state_tuple.stocks*state_tuple.s_return
-        # r = self.reward_for_profit(state_tuple, action, new_state_tuple)
-
         p1 = self.preprocessor.inverse_transform_budget(new_state_tuple.profit)
         p0 = self.preprocessor.inverse_transform_budget(state_tuple.profit)
         #
         n1 = self.preprocessor.inverse_transform_stocks(new_state_tuple.stocks)
         n0 = self.preprocessor.inverse_transform_stocks(state_tuple.stocks)
-        #
+        # # # #
         d1 = self.preprocessor.inverse_transform_price(new_state_tuple.data)
         d0 = self.preprocessor.inverse_transform_price(state_tuple.data)
 
-        # inv = self.preprocessor.inverse_transform_price(state_tuple.inv)
-        # r = state_tuple.data
+        inv = self.preprocessor.inverse_transform_price(state_tuple.inv)
+        # inv = self.agent_state.get_inventory()
+        # r = 0
+        r = 0
+        # if action == Action.DoNothing:
+        #     r = 0.15
+        #
+        # buying_frequence = 0.8
+        #
+        # if action == Action.Buy:
+        #     r = -0.01
+        #
 
-        # r = max(p1+d1*n1-p0-n0*d0, 0)
 
 
-        # if p0<=d0 and action == Action.Buy:
-        #     r = -15
-        # elif n0<=1 and action == Action.Sell:
-        #     r = -15
+        if action == Action.Sell:
+            if inv == 0:
+                r = 0
+            else:
 
-        # if action == Action.Sell:
-        #     if state_tuple.inv == 0:
-        #         r = 0
-        #     else:
-        #         r = max(state_tuple.data - state_tuple.inv, 0)
+                r = max(state_tuple.data - state_tuple.inv, 0)
+        #
+        #
 
-        r = max(p1 + n1*d1- p0 - n0*d0, 0)
 
-        # if p0<=d0 and action == Action.Buy:
-        #     r = -10
-        # elif n0<=1 and action == Action.Sell:
-        #     r = -10
-        if p1<=0 or n1<=0:
-            r = -100
 
-        # if new_state_tuple.profit <= 0:
-            # r= -abs(r)*2
+        # if n1<0 or p1<0:
+        #     r-=0.5
+
+        #         r = d0-inv
+        # if action == Action.DoNothing:
+        #     if inv == 0:
+        #         r = 1
+        #     elif d0<inv:
+        #         r = 1
+        # r = max(p1-p0 +n1*d1 - n0*d0, 0)
+        if p0<=0 and action == Action.Buy:
+            r -= 0.2
+            # r = 0
+        elif n0<=0 and action == Action.Sell:
+            # r = 0
+            r-= 0.2
+        # if p1<=0. or n1 <=0.:
+        #     r -=0.5
+
+        # if p1<=5*d0 or n1 <= 5.:
+        #     r = 0
+
+        # if p1<5*d0 or n1<5:
+        #     k = -abs(int(d0/p1))
+        #     l = -abs(5-max(n1, 0))
+        #     r = min(k, l)
+
+        # r = max(p1-p0 +n1*d1 - n0*d0, 0)
+        # r = p1-p0 +n1*d1 - n0*d0
 
         return r
 
@@ -89,14 +112,8 @@ class Reward:
             return -abs(profit)*fee
         return 0
 
-
-
-
-
     def get_reward_for_being_alive(self):
         return 5
-
-
 
     def clip_reward(self, reward):
         clipped = np.clip(reward, self.min_value, self.max_value)

@@ -5,14 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from market_analysis.deep_q_learning.neural_net.neural_net_logger import NeuralNetLogger
 
-BATCH_SIZE = 32
+BATCH_SIZE = 50
 
 class DeepQ:
 
     def __init__(self, neural_network, environment, replay_memory, statistics, num_of_actions, num_of_states, epsilon_strategy, num_of_iterations, target_net):
 
         self.num_of_iterations = num_of_iterations
-        self.gamma = 0.97
+        self.gamma = 0.95
         self.num_of_actions, self.num_of_features = num_of_actions, num_of_states
         self.iteration = 0
 
@@ -23,12 +23,12 @@ class DeepQ:
         self.epsilon_strategy = epsilon_strategy
 
         self.neural_net_logger = NeuralNetLogger(neural_network)
-
+        # self.epsilon = 1
         self.target_neural_network = target_net
-        self.updating_target_freq = 200
+        self.updating_target_freq = 400
 
     def choose_action(self, state):
-        self.epsilon = self.epsilon_strategy.get_epsilon()
+        self.epsilon = self.epsilon_strategy.get_epsilon_2()
         if random.uniform(0,1) < self.epsilon:
             self.num_of_random_actions+=1
             return random.randint(0, self.num_of_actions - 1)
@@ -64,23 +64,29 @@ class DeepQ:
             budget_at_the_end_of_iteration = budget[-1]
             stocks_at_the_end_of_iteration = stocks[-1]
 
-            print 'Budget: {}, stocks: {}, Reward: {}, Random actions: {}'.format(budget_at_the_end_of_iteration,
+            print 'Budget: {}, stocks: {}, Reward: {}, Random actions: {}, Profit: {}'.format(budget_at_the_end_of_iteration,
                                                                                   stocks_at_the_end_of_iteration,
                                                                                   total_reward,
-                                                                                  self.num_of_random_actions)
+                                                                                  self.num_of_random_actions,
+                                                                                              self.environment.agent_state.profit_by_selling)
             self.statistics.add_budget(budget_at_the_end_of_iteration)
             self.statistics.add_stocks(stocks_at_the_end_of_iteration)
             self.statistics.add_random_actions(self.num_of_random_actions)
 
-
+            # print self.neural_network.losses[-1]
             # self.print_q_values()
-            if self.converged(iteration):
-                break
+            # if self.converged(iteration):
+            #     break
+
         plt.plot(self.neural_network.losses)
+        plt.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
+        plt.title('Loss function of neural network')
+        plt.ylabel('Loss')
+        plt.xlabel('Training step')
         plt.show()
 
     def converged(self, iteration):
-        n = 10
+        n = 20
 
         if iteration < n:
             return False
@@ -135,27 +141,29 @@ class DeepQ:
         print q_predict_states[:, 0]
 
     def replay(self):
-        if self.epsilon_strategy.steps % self.updating_target_freq == 0:
-            self.copy_weights()
+        # if self.epsilon_strategy.steps % self.updating_target_freq == 0:
+        #     self.copy_weights()
+        if BATCH_SIZE<= self.replay_memory.get_size():
+            batch = self.replay_memory.sample(BATCH_SIZE)
+            states = np.array([exp_tuple[0] for exp_tuple in batch])
 
-        batch = self.replay_memory.sample(BATCH_SIZE)
-        states = np.array([exp_tuple[0] for exp_tuple in batch])
+            # organized_batch = list(zip(*batch))
+            # states = np.array(organized_batch[0])
+            next_states = np.array([(np.zeros(self.num_of_features)
+                                    if exp_tuple[3] is None
+                                    else exp_tuple[3]) for exp_tuple in batch])
 
-        # organized_batch = list(zip(*batch))
-        # states = np.array(organized_batch[0])
+            q_values = self.neural_network.predict_batch(states)
 
-        next_states = np.array([(np.zeros(self.num_of_features)
-                                if exp_tuple[3] is None
-                                else exp_tuple[3]) for exp_tuple in batch])
+            # if self.iteration % 20== 0:
+            #     print q_values
 
+            q_values_next = self.neural_network.predict_batch(next_states)
 
-        q_values = self.neural_network.predict_batch(states)
-        q_values_next = self.target_neural_network.predict_batch(next_states)
+            if self.iteration %10 == 0:
+                print q_values
 
-        # if self.iteration == self.num_of_iterations-1:
-        # print q_values
-
-        self.update_q_values_and_train_net(batch, q_values, q_values_next)
+            self.update_q_values_and_train_net(states, batch, q_values, q_values_next)
 
 
 
@@ -163,20 +171,27 @@ class DeepQ:
             # print self.target_neural_network.weights[0]
             # print self.neural_network.weights[0].eval(session = self.neural_network.session) == self.target_neural_network.weights[0]
 
-    def update_q_values_and_train_net(self, batch, q_values, q_values_next):
+    def update_q_values_and_train_net(self, states, batch, q_values, q_values_next):
         grouped_batch = zip(*batch)
 
         states = np.array(grouped_batch[0])
         actions = np.array(grouped_batch[1])
         rewards = np.array(grouped_batch[2])
 
+        p = np.amax(q_values_next, axis = 1)
         full_rewards = rewards+self.gamma*np.amax(q_values_next, axis = 1)
-        # print q_values
-        # print actions
-        q_values[range(len(states)),list(actions)] = full_rewards
-        # print q_values
+
+        q_values[range(len(states)), list(actions)] = full_rewards
 
         self.neural_network.train(states, q_values)
+
+        # for i, exp_tuple in enumerate(batch):
+        #     state, action, reward, next_state = exp_tuple
+        #
+        #     q_values[i][action] = (reward + self.gamma*np.max(q_values_next[i])
+        #     if next_state is not None
+        #     else reward)
+        #     self.neural_network.train(states, q_values)
         # self.neural_net_logger.log_performance(states, q_values, self.iteration)
 
     def copy_weights(self):

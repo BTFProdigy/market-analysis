@@ -9,5 +9,5 @@ class RealTimeTradingDataGetter:
         #                                                       self.agent_state.num_of_stocks,
         #                                                       self.agent_state.budget,
         #                                                       False)
-        # return self.data_preprocessor.transform_price(data.ix[-1])
+        # return self.data_preprocessor.transform_price(data.ix[-1].values[0])
         return data.iloc[-1]

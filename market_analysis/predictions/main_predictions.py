@@ -6,16 +6,18 @@ from market_analysis.postprocessing import PostprocessingSteps
 from market_analysis.predictions import ModelEvaluator, MultivariateAnalysisTests, RollingForwardCrossValidation, \
     ModelConfiguration
 from market_analysis.predictions.algorithm.arima import Arima
+from market_analysis.predictions.data_getter import DataGetter
+from market_analysis.predictions.predictor_data_adapter import PredictorDataAdapter
 from market_analysis.preprocessing import PreprocessingSteps
 
-
+import pandas as pd
 def train(dataframe):
     configuration = ModelConfiguration()
 
     preprocessing_steps = PreprocessingSteps(configuration)
     postprocessing_steps = PostprocessingSteps(configuration)
     model_evaluator = ModelEvaluator()
-    multivariate = MultivariateAnalysisTests()
+    # multivariate = MultivariateAnalysisTests()
 
     # multivariate.cointegration_exists(dataframe)
 
@@ -29,8 +31,9 @@ def train(dataframe):
     # p = postprocessing_steps.postprocess(preprocessed, dataframe)
     # multivariate.granger_causality_test(preprocessed, predictor.get_model_results())
     # model_evaluator.evaluate_model(predictor.get_fitted_values(), preprocessed)
-    # model_evaluator.plot_scatter_real_predicted(preprocessed, predictor.get_fitted_values())
-    # model_evaluator.evaluate_model(postprocessed, dataframe)
+
+    model_evaluator.plot_scatter_real_predicted(preprocessed, predictor.get_fitted_values())
+    model_evaluator.evaluate_model(postprocessed, dataframe)
     print model_evaluator.get_rmse(predictor.get_fitted_values(), preprocessed)
     # mape = predictor.get_mape()
     # print mape
@@ -43,11 +46,22 @@ def train(dataframe):
 
 behavior_saver = AgentsBehaviorSaver()
 path = paths.get_behavior_path()
-actions = behavior_saver.load(path)[0].to_frame()
+actions = behavior_saver.load(path).to_frame()
 
-if actions.size != 0:
+# data_getter = DataGetter()
+# data_adapter = PredictorDataAdapter()
+# data = data_getter.get_all_values_for_period_by_buckets_for_parameter('hdp-master', '2018-12-19 23:00:00',
+#                                                                       'ram-free','2018-12-20 04:00:00',
+#                                                 )
+# df = data_adapter.adapt_data(data)
+
+df = actions
+# data = None
+if df.size != 0:
     # print data.describe()
-
-    # train(actions)
-    roll = RollingForwardCrossValidation()
-    roll.validation(0, actions.iloc[-100:])
+    # df = df.div(1000)
+    # df.index = pd.to_datetime(df.index)
+    # df= df.resample(str(30) + "s").last()
+    train(df)
+    # roll = RollingForwardCrossValidation()
+    # roll.validation(0, df)

@@ -118,7 +118,7 @@ class TestAndValidation:
         deep_q = DeepQ(nn, env, mem, statistics, num_of_actions, env.num_of_features, epsilon_strategy, num_of_iterations)
         deep_q.iterate_over_states()
 
-        evaluation.plot_actions_during_time(data['Close'], statistics.actions_for_last_iteration)
+        evaluation.plot_actions_during_time(data['Price'], statistics.actions_for_last_iteration)
 
         return deep_q.neural_network
 
@@ -146,7 +146,7 @@ class TestAndValidation:
                            model_parameters.activation_function1, model_parameters.activation_function2)
 
         # nn = NeuralNetwork(*model_parameters.__dict__.values)
-        nn = nn.restore_model(model_path + "model")
+        nn = nn.restore_model(model_path)
         return nn
 
 

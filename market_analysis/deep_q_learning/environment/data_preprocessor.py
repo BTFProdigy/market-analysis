@@ -32,18 +32,23 @@ class DataPreprocessor:
             # dataframe = data_transforms.remove_outliers(dataframe, 2.5)
             # dataframe = data_transforms.normalize_data(dataframe)
 
-            dataframe = self.data_transforms.smooth_data(dataframe, 10)
+            # dataframe = self.data_transforms.smooth_data(dataframe, 10)
             dataframe = self.data_transforms.fill_missing_data(dataframe)
 
-            dataframe.plot()
+            dataframe.plot(legend = ['Price'])
+            plt.title('Price')
+            plt.legend()
+            plt.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
             plt.show()
 
             if self.scaling:
-                budget_min_max = np.array([0, budget*2])
-                stocks_min_max = np.array([0, stocks*2])
+                # budget_min_max = np.array([0, budget*2])
+                # stocks_min_max = np.array([0, stocks*2])
+                budget_min_max = np.array([0, 1])
+                stocks_min_max = np.array([0, 1])
 
                 if training:
-                    self.minmaxscaler.fit_transform(dataframe)
+                    self.minmaxscaler.fit_transform(np.append(dataframe.values, 0).reshape(-1, 1))
                     self.stocks_scaler.fit(stocks_min_max.reshape(-1,1))
                     self.budget_scaler.fit(budget_min_max.reshape(-1,1))
                 else:

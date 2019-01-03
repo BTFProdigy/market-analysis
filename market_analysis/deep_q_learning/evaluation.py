@@ -18,8 +18,10 @@ class Evaluation:
 
         ax = price.plot()
         ax.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
-        plt.plot(actions_buy['Close'], "ro")
-        plt.plot(actions_sell['Close'], "go")
+        plt.plot(actions_buy['Price'], "ro", label = 'Buy')
+        plt.plot(actions_sell['Price'], "go", label = 'Sell')
+        plt.title('Actions')
+        plt.legend()
         plt.show()
 
     def evaluate(self, deep_q_statistics):
@@ -45,7 +47,7 @@ class Evaluation:
         self.plot_statistics(rewards_avg, " Average Reward")
 
     def plot_stocks(self, stocks):
-        self.plot_statistics(stocks, "Num of owned stocks")
+        self.plot_statistics(stocks, "Number of owned stocks")
 
     def plot_stocks_for_last_iteration(self, stocks):
         self.plot_statistics(stocks, "Stocks for last iteration")
@@ -60,7 +62,7 @@ class Evaluation:
         self.plot_statistics(epsilon, "Epsilon")
 
     def plot_random_actions(self, random_actions):
-        self.plot_statistics(random_actions, "No of random actions")
+        self.plot_statistics(random_actions, "Number of random actions")
 
     def plot_statistics(self, list, ylabel, xlabel = "Iteration"):
         x = range(list.__len__())
@@ -70,6 +72,7 @@ class Evaluation:
         plt.ylabel(ylabel)
         plt.xlabel(xlabel)
         plt.title(ylabel)
+
         plt.show()
 
     def show_rewards_for_buy_and_sell_in_last_iteration(self, actions, rewards):
@@ -88,7 +91,9 @@ class Evaluation:
         plt.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
 
         plt.colorbar()  # show color scale
-
+        plt.title('Rewards for specific actions in the last iteration')
+        plt.xlabel('Instance')
+        plt.ylabel('Reward')
         plt.show()
 
     def scatter_plot_rewards1(self, actions, rewards):
@@ -97,6 +102,9 @@ class Evaluation:
                     cmap='viridis')
         plt.grid(color = 'gray', linestyle = '-', linewidth = 0.25, alpha = 0.5)
 
+        plt.title('Rewards for specific actions in the last iteration')
+        plt.xlabel('Action')
+        plt.ylabel('Reward')
 
         plt.show()
 

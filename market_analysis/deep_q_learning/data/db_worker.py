@@ -56,7 +56,7 @@ class DBWorker(object):
 
         rows = self.session.execute(query, params)
 
-        df = pd.DataFrame(columns = ['Close'])
+        df = pd.DataFrame(columns = ['Price'])
 
         for row in rows:
             df.loc[row.time] = row.price
@@ -64,6 +64,29 @@ class DBWorker(object):
         df = df.sort_index()
 
         return df
+
+    def get_trades_for_fake_trading(self, ticker, start_time, limit_num):
+        query = '''SELECT * FROM trades    
+                   WHERE ticker = %(ticker)s AND time>= %(start_date)s order by time asc limit %(limit_num)s;'''
+
+        params = {
+            'ticker': ticker,
+            'start_date': start_time,
+            'limit_num': limit_num
+            # 'end_date': end_time
+        }
+
+        rows = self.session.execute(query, params)
+
+        df = pd.DataFrame(columns = ['Price', 'Volume'])
+
+        for row in rows:
+            df.loc[row.time] = [row.price, row.size]
+            # df.loc[row.time]['Volume'] = row.size
+
+        df = df.sort_index()
+
+        return df.ix[-1]
 
     def get_trades_for_period(self, ticker, start_date, end_date = None):
 
@@ -81,7 +104,7 @@ class DBWorker(object):
 
         rows = self.session.execute(query, params)
 
-        df = pd.DataFrame(columns = ['Close', 'Volume'])
+        df = pd.DataFrame(columns = ['Price', 'Volume'])
 
         for row in rows:
             df.loc[row.time] = [row.price, row.size]

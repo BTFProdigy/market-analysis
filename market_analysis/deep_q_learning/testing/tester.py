@@ -10,7 +10,7 @@ class Tester:
         total_reward = 0
         actions = []
         rewards = []
-        bu
+
         while True:
             state = env.curr_state
 
@@ -42,7 +42,7 @@ class Tester:
                                      agent_state.num_of_stocks,
                                      total_reward)
 
-        evaluation.plot_actions_during_time(data['Close'], actions)
+        evaluation.plot_actions_during_time(data['Price'], actions)
         return total_reward, agent_state.budget, agent_state.num_of_stocks
 
     def save_agents_behavior(self, actions, rewards, index):

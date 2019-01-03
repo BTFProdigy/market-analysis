@@ -20,8 +20,8 @@ class NeuralNet:
         self.activation_func1 = activation_function1
         self.activation_func2 = acivation_function2
 
-        self.weights = [0]*3
-        self.biases = [0]*3
+        self.weights = [0]*4
+        self.biases = [0]*4
 
         self.setup_net(num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions)
 
@@ -40,30 +40,30 @@ class NeuralNet:
         self.target_q = tf.placeholder(dtype=tf.float32, shape=[None, num_of_actions], name="target_q" )
 
         with tf.name_scope('layers'):
-            self.weights[0] = tf.Variable(tf.random_uniform([num_of_states, hidden_nodes_layer1]), dtype=tf.float32)
+            self.weights[0] = tf.Variable(tf.random_uniform([num_of_states, hidden_nodes_layer1], minval=-0.05, maxval=0.05), dtype=tf.float32)
             self.biases[0] = tf.Variable(tf.random_uniform([hidden_nodes_layer1]))
 
-            self.weights[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer1, hidden_nodes_layer2]), dtype=tf.float32)
+            self.weights[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer1, hidden_nodes_layer2], minval=-0.05, maxval=0.05), dtype=tf.float32)
             self.biases[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer2]))
 
-            # self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, 8]), dtype=tf.float32)
-            # self.biases[2] = tf.Variable(tf.random_uniform([8]))
+            self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, 8], minval=-0.05, maxval=0.05), dtype=tf.float32)
+            self.biases[2] = tf.Variable(tf.random_uniform([8]))
 
-            self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, num_of_actions]), dtype=tf.float32)
-            self.biases[2] = tf.Variable(tf.random_uniform([num_of_actions]))
+            self.weights[3] = tf.Variable(tf.random_uniform([8, num_of_actions], minval=-0.05, maxval=0.05), dtype=tf.float32)
+            self.biases[3] = tf.Variable(tf.random_uniform([num_of_actions]))
 
-            act1= self.get_activation_function(self.activation_func1)
+            act1 = self.get_activation_function(self.activation_func1)
             act2 = self.get_activation_function(self.activation_func2)
 
             A1 = act1(tf.matmul(self.states, self.weights[0]))
             A2 = act2(tf.matmul(A1, self.weights[1]) )
-            # A3 = act2(tf.matmul(A2, self.weights[2]))
-            self.predicted_q = tf.matmul(A2, self.weights[2])
+            A3 = act2(tf.matmul(A2, self.weights[2]))
+            self.predicted_q = tf.matmul(A3, self.weights[3])
 
             tf.summary.histogram("predicted", self.predicted_q)
 
         with tf.name_scope("loss" +self.get_architecture_string()):
-            self.loss = tf.losses.mean_squared_error(self.target_q, self.predicted_q, reduction=Reduction.SUM)
+            self.loss = tf.losses.mean_squared_error(self.target_q, self.predicted_q)
 
             tf.summary.scalar("loss", self.loss)
 
@@ -87,7 +87,7 @@ class NeuralNet:
         # w = weights[:]
         # # print self.weights
         # b = biases[:]
-        for i in range(3):
+        for i in range(4):
             self.weights[i].assign(tf.Variable(weights[i]))
             self.biases[i].assign(tf.Variable(biases[i]))
 
