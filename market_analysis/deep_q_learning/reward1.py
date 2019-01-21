@@ -1,7 +1,6 @@
 from collections import namedtuple
 
-from market_analysis.deep_q_learning.action import Action
-import math
+from market_analysis.deep_q_learning.reinforcement.action import Action
 import numpy as np
 State = namedtuple('State', ['s_return1', 's_return_2', 's_return_3', 's_return_4', 's_return_5', 'bollinger_band_diff', 'sharpe_ratio', 'daily_return','stocks', 'budget'])
 

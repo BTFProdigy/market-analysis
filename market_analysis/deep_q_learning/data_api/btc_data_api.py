@@ -8,10 +8,12 @@ import requests
 
 from data_api import DataApi
 from db_worker import DBWorker
+from market_analysis.deep_q_learning import config_getter
 from order import Order
 from trade import Trade
+import os.path
 
-
+import configparser
 class BtcDataApi(DataApi):
 
     def __init__(self, db_worker):
@@ -23,7 +25,7 @@ class BtcDataApi(DataApi):
         t = Timer(initial_delay, self.collect_trade_data_and_order_book)
         t.start()
 
-    def get_trade(self, ticker="BTC-EUR"):
+    def get_trades(self, ticker="BTC-EUR", start_date = None, end_date = None):
         url = "https://api.gdax.com/products/{}/ticker".format(ticker)
 
         response = requests.get(url)
@@ -37,7 +39,7 @@ class BtcDataApi(DataApi):
 
     def collect_trade_data_and_order_book(self, ticker="BTC-EUR"):
 
-        trade = self.get_trade()
+        trade = self.get_trades()
         bids, asks = self.get_order_book()
 
 
@@ -87,8 +89,18 @@ class BtcDataApi(DataApi):
         return bids, asks
 
 
+def get_config(file):
+    config = configparser.ConfigParser()
+    # config.read('config')
+    config.read(os.path.dirname(os.path.dirname(__file__)) + '/' + file)
+
+
+config = config_getter.get_config('config')
+db_address = config.getint('DB','db_address')
+db_name = config.getint('DB','db_name')
+db_worker = DBWorker(db_address, db_name)
 # get_order_book()
-db_worker = DBWorker()
+
 data_getter = BtcDataApi(db_worker)
 data_getter.start_collecting()
 

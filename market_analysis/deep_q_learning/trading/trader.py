@@ -5,26 +5,26 @@ from threading import Timer
 import datetime
 import numpy as np
 import time
-from market_analysis.deep_q_learning.action import Action
+
+from market_analysis.deep_q_learning.neural_net.neural_net import NeuralNet
+from market_analysis.deep_q_learning.reinforcement.action import Action
 from market_analysis.deep_q_learning.environment.environment_builder import EnvironmentBuilder
-from market_analysis.deep_q_learning.environment.fake_real_time_trading_data_getter import FakeRealTimeTradingDataGetter
-from market_analysis.deep_q_learning.environment.real_time_trading_data_getter import RealTimeTradingDataGetter
-from market_analysis.deep_q_learning.data.db_worker import DBWorker
-from market_analysis.deep_q_learning.neural_net.neural_network import NeuralNetwork
-from market_analysis.deep_q_learning.environment.data_preprocessor import DataPreprocessor
-from market_analysis.deep_q_learning.reward import Reward
-import paths
+from market_analysis.deep_q_learning.environment.real_time_env.fake_real_time_trading_data_getter import FakeRealTimeTradingDataGetter
+from market_analysis.deep_q_learning.preprocessing.data_preprocessor import DataPreprocessor
+from market_analysis.deep_q_learning.reinforcement.reward import Reward
+import market_analysis.deep_q_learning.paths
 class Trader:
 
-    def __init__(self, name, random):
+    def __init__(self, db_worker, name, random):
         self.name = name
         self.random = random
+        self.db_worker = db_worker
 
     def trade(self, agent_state, ticker, action_performer, model):
-        db_worker = DBWorker()
+
         self.data_preprocessor = DataPreprocessor.get_instance()
-        self.data_preprocessor.load_scalers(paths.get_scalars_path())
-        realtime_data_getter = FakeRealTimeTradingDataGetter(db_worker, self.data_preprocessor, '2018-11-24 23:00:00')
+        self.data_preprocessor.load_scalers(market_analysis.deep_q_learning.paths.get_scalars_path())
+        realtime_data_getter = FakeRealTimeTradingDataGetter(self.db_worker, self.data_preprocessor, '2018-11-24 23:00:00')
 
         reward = Reward(self.data_preprocessor)
         env_builder = EnvironmentBuilder(reward)
@@ -42,11 +42,11 @@ class Trader:
         return
 
     def restore_model(self, model):
-        model_path = paths.get_models_path()+model
+        model_path = market_analysis.deep_q_learning.paths.get_models_path() + model
         model_parameters = self.load_model_parameters(model_path + "parameters")
-        nn = NeuralNetwork(model_parameters.input_size, model_parameters.output_size,
-                           model_parameters.num_hidden_nodes1, model_parameters.num_hidden_nodes2,
-                           model_parameters.activation_function1, model_parameters.activation_function2)
+        nn = NeuralNet(model_parameters.input_size, model_parameters.output_size,
+                           [model_parameters.num_hidden_nodes1, model_parameters.num_hidden_nodes2, model_parameters.num_hidden_nodes1],
+                           [model_parameters.activation_function1, model_parameters.activation_function2, model_parameters.activation_function2])
 
         # nn = NeuralNetwork(*model_parameters.__dict__.values)
         nn = nn.restore_model(model_path)
@@ -54,7 +54,6 @@ class Trader:
 
     def perform_realtime_actions(self, env, nn):
         state = env.curr_state
-
 
         if self.random == False:
             q_values = nn.predict(state)
@@ -100,8 +99,6 @@ class Trader:
     def sell_with_no_stocks(self, env, action):
         state = env.agent_state
         return action == Action.Sell and state.stocks < 0
-
-
 
     def load_model_parameters(self, file_name):
         with open(file_name, 'rb') as file:

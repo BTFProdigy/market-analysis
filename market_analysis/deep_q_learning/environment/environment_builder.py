@@ -1,5 +1,5 @@
 from market_analysis.deep_q_learning.environment.agent_state import AgentState
-from market_analysis.deep_q_learning.environment.realtime_environment import RealTimeEnvironment
+from market_analysis.deep_q_learning.environment.real_time_env.realtime_environment import RealTimeEnvironment
 from train_environment import TrainEnvironment
 
 

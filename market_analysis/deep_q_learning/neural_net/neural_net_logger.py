@@ -10,8 +10,8 @@ class NeuralNetLogger:
 
     def create_writer(self):
         log_dir = '%s_%i_%i_%s_%s' % (paths.get_log_dir(),
-                                      self.neural_net.hidden_nodes1, self.neural_net.hidden_nodes2,
-                                      self.neural_net.activation_func1,self.neural_net.activation_func2)
+                                      self.neural_net.hidden_nodes[0], self.neural_net.hidden_nodes[1],
+                                      self.neural_net.activation_functions[0],self.neural_net.activation_functions[1])
         writer = tf.summary.FileWriter(log_dir)
 
         writer.add_graph(self.neural_net.session.graph)

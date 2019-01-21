@@ -5,10 +5,10 @@ from order import Order
 from datetime import datetime as dt
 
 class DBWorker(object):
-    def __init__(self):
-        self.cluster = Cluster(['192.168.84.132'])
+    def __init__(self, address, db ):
+        self.cluster = Cluster([address])
         # self.cluster = Cluster(['localhost'])
-        self.session = self.cluster.connect('market')
+        self.session = self.cluster.connect(db)
         self.cluster.register_user_type('market', 'market_order', Order)
 
     def insert_trade(self, trade, timestamp):
@@ -123,9 +123,7 @@ class DBWorker(object):
 
         rows = self.session.execute(query, params)
 
-
         [(bids, asks)] = [(row.bids, row.asks) for row in rows]
-
 
         return bids, asks
 

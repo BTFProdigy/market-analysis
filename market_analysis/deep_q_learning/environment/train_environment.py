@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from market_analysis.deep_q_learning.action import Action
+from market_analysis.deep_q_learning.reinforcement.action import Action
 State = namedtuple('State', ['s_return', 'bollinger_band_diff', 'sharpe_ratio', 'daily_return','stocks', 'budget'])
 
 

@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 from market_analysis.deep_q_learning.agents_behavior_saver import AgentsBehaviorSaver
-from market_analysis.deep_q_learning.evaluation import Evaluation
+from market_analysis.deep_q_learning.evaluation.evaluation import Evaluation
+
 
 class Tester:
 

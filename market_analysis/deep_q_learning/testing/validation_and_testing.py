@@ -4,17 +4,18 @@ from collections import namedtuple
 import numpy as np
 
 from market_analysis.deep_q_learning import paths
-from market_analysis.deep_q_learning.action import Action
-from market_analysis.deep_q_learning.deep_q import DeepQ
-from market_analysis.deep_q_learning.deep_q_statistics import DeepQStatistics
-from market_analysis.deep_q_learning.environment.data_preprocessor import DataPreprocessor
-from market_analysis.deep_q_learning.evaluation import Evaluation
-from market_analysis.deep_q_learning.exploration.greedy_strategy import GreedyStrategy
+from market_analysis.deep_q_learning.evaluation.evaluation import Evaluation
+from market_analysis.deep_q_learning.exploration.linear_greedy_strategy import LinearGreedyStrategy
+from market_analysis.deep_q_learning.neural_net.neural_net import NeuralNet
+from market_analysis.deep_q_learning.neural_net.neural_net_keras import NeuralNetwork
+from market_analysis.deep_q_learning.reinforcement.action import Action
+from market_analysis.deep_q_learning.reinforcement.deep_q import DeepQ
+from market_analysis.deep_q_learning.evaluation.deep_q_statistics import DeepQStatistics
+from market_analysis.deep_q_learning.preprocessing.data_preprocessor import DataPreprocessor
 from market_analysis.deep_q_learning.neural_net import ActivationFunction
-from market_analysis.deep_q_learning.neural_net.neural_network import NeuralNetwork
-from market_analysis.deep_q_learning.replay_memory import ReplayMemory
+from market_analysis.deep_q_learning.reinforcement.replay_memory import ReplayMemory
 
-Conf = namedtuple('Conf', ['hidden_nodes1', 'hidden_nodes2', 'act_f1', 'act_f2'])
+Conf = namedtuple('Conf', ['hidden_nodes', 'act_f'])
 
 class TestAndValidation:
     def __init__(self, env_builder, num_of_stocks, budget, tester):
@@ -46,10 +47,10 @@ class TestAndValidation:
     def train_validate_test(self, data):
         train_data, val_data, test_data = self.split_train_validation_test(data)
 
-        confs_parameters= [(20, 20, ActivationFunction.Relu, ActivationFunction.Relu),
-                          (20, 20, ActivationFunction.Tanh, ActivationFunction.Tanh),
-                          (10, 10, ActivationFunction.Relu, ActivationFunction.Relu),
-                          (10, 10, ActivationFunction.Tanh, ActivationFunction.Tanh)]
+        confs_parameters= [([20, 20] [ActivationFunction.Relu, ActivationFunction.Relu]),
+                          ([20, 20], [ActivationFunction.Tanh, ActivationFunction.Tanh]),
+                          ([10, 10], [ActivationFunction.Relu, ActivationFunction.Relu]),
+                          ([10, 10], [ActivationFunction.Tanh, ActivationFunction.Tanh])]
 
         confs = [Conf(*conf_parameters) for conf_parameters in confs_parameters]
 
@@ -76,7 +77,7 @@ class TestAndValidation:
 
     def train_test(self, data):
         train_data, test_data = self.split_train_test(data)
-        confs = [Conf(20, 20, ActivationFunction.Relu, ActivationFunction.Relu)]
+        confs = [Conf([20, 20], [ActivationFunction.Relu, ActivationFunction.Relu])]
 
         net = self.train(confs, train_data)[0]
         self.test(net, test_data)
@@ -99,8 +100,8 @@ class TestAndValidation:
 
         return self.tester.test(net, test_env, data)
 
-    def create_net(self, num_of_features, num_of_actions, hidden_nodes1, hidden_nodes2, act_f1, act_f2):
-        nn = NeuralNetwork(num_of_features, num_of_actions, hidden_nodes1, hidden_nodes2, act_f1, act_f2)
+    def create_net(self, num_of_features, num_of_actions, hidden_nodes, act_f):
+        nn = NeuralNet(num_of_features, num_of_actions, hidden_nodes, act_f)
         return nn
 
     def get_model(self, conf, env, data):
@@ -113,10 +114,10 @@ class TestAndValidation:
         nn = self.create_net(env.num_of_features, num_of_actions, *conf)
 
         num_of_iterations = 3
-        epsilon_strategy = GreedyStrategy(num_of_actions, num_of_iterations, env.get_num_of_states_per_training_episode())
+        epsilon_strategy = LinearGreedyStrategy(num_of_actions, num_of_iterations, env.get_num_of_states_per_training_episode())
 
         deep_q = DeepQ(nn, env, mem, statistics, num_of_actions, env.num_of_features, epsilon_strategy, num_of_iterations)
-        deep_q.iterate_over_states()
+        deep_q.train()
 
         evaluation.plot_actions_during_time(data['Price'], statistics.actions_for_last_iteration)
 
@@ -142,8 +143,8 @@ class TestAndValidation:
         model_path = paths.get_models_path()+model
         model_parameters = self.load_model_parameters(model_path + "parameters")
         nn = NeuralNetwork(model_parameters.input_size, model_parameters.output_size,
-                           model_parameters.num_hidden_nodes1, model_parameters.num_hidden_nodes2,
-                           model_parameters.activation_function1, model_parameters.activation_function2)
+                           [model_parameters.num_hidden_nodes1, model_parameters.num_hidden_nodes2, model_parameters.num_hidden_nodes2],
+                           [model_parameters.activation_function1, model_parameters.activation_function2, model_parameters.activation_function2])
 
         # nn = NeuralNetwork(*model_parameters.__dict__.values)
         nn = nn.restore_model(model_path)

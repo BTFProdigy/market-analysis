@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from market_analysis.deep_q_learning.action import Action
+from market_analysis.deep_q_learning.reinforcement.action import Action
 
 
 class Evaluation:
@@ -35,9 +35,9 @@ class Evaluation:
         self.plot_budget_for_last_iteration(deep_q_statistics.budget_for_last_iteration)
         self.plot_stocks_for_last_iteration(deep_q_statistics.stocks_for_last_iteration)
 
-        self.scatter_plot_rewards(deep_q_statistics.actions_for_last_iteration, deep_q_statistics.rewards_for_last_iteration)
+        self.scatter_plot_rewards_for_instances_last_iteration(deep_q_statistics.actions_for_last_iteration, deep_q_statistics.rewards_for_last_iteration)
         # self.show_rewards_for_buy_and_sell_in_last_iteration(deep_q_statistics.actions_for_last_iteration, deep_q_statistics.rewards_for_last_iteration)
-        self.scatter_plot_rewards1(deep_q_statistics.actions_for_last_iteration, deep_q_statistics.rewards_for_last_iteration)
+        self.scatter_plot_rewards_for_actions_last_iteration(deep_q_statistics.actions_for_last_iteration, deep_q_statistics.rewards_for_last_iteration)
         self.plot_rewards_for_last_iteration(deep_q_statistics.rewards_for_last_iteration)
 
     def plot_rewards(self, rewards):
@@ -82,7 +82,7 @@ class Evaluation:
             plt.text(len%500, index, str(rewards[index]), fontsize=8)
         plt.show()
 
-    def scatter_plot_rewards(self, actions, rewards):
+    def scatter_plot_rewards_for_instances_last_iteration(self, actions, rewards):
 
         colors = map(lambda x: int(x), actions)
         instances = range(len(actions))
@@ -96,7 +96,7 @@ class Evaluation:
         plt.ylabel('Reward')
         plt.show()
 
-    def scatter_plot_rewards1(self, actions, rewards):
+    def scatter_plot_rewards_for_actions_last_iteration(self, actions, rewards):
 
         plt.scatter(map(lambda x: int(x), actions), rewards, alpha=0.3,
                     cmap='viridis')

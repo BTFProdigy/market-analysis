@@ -2,15 +2,19 @@ import traceback
 
 import pandas as pd
 
-from market_data_reader import DataReader
+from market_analysis.deep_q_learning.data_api.data_api import DataApi
+from market_analysis.data_reader.market_data_reader import DataReader
 
 
-class DataReaderImpl(DataReader):
+class FileSystemDataApi(DataApi):
 
-    def read_data(self, path, stock, start_date, end_date = None):
+    def __init__(self, path):
+        self.path = path
+
+    def get_trades(self, stock, start_date, end_date = None):
         # dates = pd.date_range(start_date, end_date)
         try:
-            filename = path + stock.lower() + ".us.txt"
+            filename = self.path + stock.lower() + ".us.txt"
             df = pd.read_csv(filename, index_col="Date", parse_dates=True)
 
             if end_date != None:
@@ -25,6 +29,7 @@ class DataReaderImpl(DataReader):
 
 
     def read_market_data(self, path, market, start_date, end_date):
-        data = self.read_data(path, market, start_date, end_date)
+
+        data = self.get_trades(path, market, start_date, end_date)
         return data
         # for comparson

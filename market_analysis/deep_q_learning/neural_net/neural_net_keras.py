@@ -14,18 +14,19 @@ import matplotlib.pyplot as plt
 import market_analysis.deep_q_learning.paths as paths
 class NeuralNetwork:
 
-    def __init__(self, num_of_states, num_of_actions, hidden_nodes_layer1, hidden_nodes_layer2, activation_function1, acivation_function2):
+    def __init__(self, num_of_states, num_of_actions, hidden_nodes, activation_functions):
         self.num_of_states = num_of_states
-        self.hidden_nodes1 = hidden_nodes_layer1
-        self.hidden_nodes2 = hidden_nodes_layer2
+
+        self.hidden_nodes = hidden_nodes
         self.num_actions = num_of_actions
 
-        self.activation_func1 = activation_function1
-        self.activation_func2 = acivation_function2
+        self.activation_functions = activation_functions
 
-        self.setup_net(num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions)
+        self.num_actions = num_of_actions
+
+
+        self.setup_net(num_of_states, hidden_nodes, num_of_actions)
         # self.setup_net1()
-        # tf.reset_default_graph()
         self.session =  tf.Session()
         self.saver = tf.train.Saver()
         self.session.run(tf.global_variables_initializer())
@@ -34,33 +35,37 @@ class NeuralNetwork:
         # self.writer = self.create_writer()
 
     def get_architecture_string(self):
-        return '%i_%i_%s_%s' % (self.hidden_nodes1, self.hidden_nodes2, self.activation_func1, self.activation_func2)
+        return '%i_%i_%s_%s' % (self.hidden_nodes[0], self.hidden_nodes[1], self.activation_functions[0], self.activation_functions[1])
 
 
-    def setup_net1(self):
-        model = Sequential()
-        model.add(Dense(units=16, input_dim=self.num_of_states, activation="relu"))
-        model.add(Dense(units=16, activation="relu"))
-        model.add(Dense(units=8, activation="relu"))
-        model.add(Dense(self.num_actions, activation="linear"))
-        model.compile(loss="mse", optimizer=Adam())
-        self.model = model
+    # def setup_net1(self):
+    #     model = Sequential()
+    #     model.add(Dense(units=16, input_dim=self.num_of_states, activation="relu"))
+    #     model.add(Dense(units=16, activation="relu"))
+    #     model.add(Dense(units=8, activation="relu"))
+    #     model.add(Dense(self.num_actions, activation="linear"))
+    #     model.compile(loss="mse", optimizer=Adam())
+    #     self.model = model
 
 
-    def setup_net(self, num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions):
+    def setup_net(self, num_of_states, hidden_nodes, num_of_actions):
         self.states = tf.placeholder(shape=(None, num_of_states), dtype=tf.float32, name="states")
         self.target_q = tf.placeholder(dtype=tf.float32, shape=[None, num_of_actions], name="target_q" )
-
+        layers = []
         with tf.name_scope('layers'):
 
-            layer1 = tf.layers.dense(self.states, hidden_nodes_layer1, activation=self.get_activation_function(self.activation_func1))
-            layer2 = tf.layers.dense(layer1, hidden_nodes_layer2, activation=self.get_activation_function(self.activation_func2))
-            layer3 = tf.layers.dense(layer2, 6, activation=self.get_activation_function(self.activation_func2))
+            num_hidden_nodes = len(hidden_nodes)
+            for i in range(num_hidden_nodes):
+                if i == 0:
+                    input = self.states
 
-            # tf.summary.histogram("layer2", layer2)
+                else:
+                    input = layers[i-1]
+
+                layers.append(tf.layers.dense(input, hidden_nodes[i], activation=self.get_activation_function(self.activation_functions[i])))
 
             init = tf.random_uniform_initializer(minval=-0.05, maxval=0.05)
-            self.predicted_q = tf.layers.dense(layer3, num_of_actions, kernel_initializer=init)
+            self.predicted_q = tf.layers.dense(layers[num_hidden_nodes-1], num_of_actions, kernel_initializer=init)
 
             tf.summary.histogram("predicted", self.predicted_q)
 
@@ -91,7 +96,6 @@ class NeuralNetwork:
             return tf.nn.tanh
 
     def predict(self, state):
-        # p = self.model.predict(state.reshape(1, self.num_of_states))
         # return self.model.predict(state.reshape(1, self.num_of_states))
         return self.session.run(self.predicted_q, feed_dict={self.states:
                                                             state.reshape(1, self.num_of_states)})
@@ -105,8 +109,8 @@ class NeuralNetwork:
         self.saver.save(self.session, path)
 
         with open(path+"parameters", 'wb') as file:
-            model = ModelParameters(self.hidden_nodes1, self.hidden_nodes2,
-                                    self.activation_func1, self.activation_func2,
+            model = ModelParameters(self.hidden_nodes[0], self.hidden_nodes[1],
+                                    self.activation_functions[0], self.activation_functions[1],
                                     self.num_of_states, self.num_actions)
             cPickle.dump(model, file)
 
@@ -114,10 +118,10 @@ class NeuralNetwork:
         self.saver.restore(self.session, path)
         return self
 
-    def get_weights(self):
-        w0= tf.get_variable('layer1/kernel')
-        return w0
-
-    def set_weights(self):
-        w0= tf.set_('layer1/kernel')
-        return w0
+    # def get_weights(self):
+    #     w0= tf.get_variable('layer1/kernel')
+    #     return w0
+    #
+    # def set_weights(self):
+    #     w0= tf.set_('layer1/kernel')
+    #     return w0

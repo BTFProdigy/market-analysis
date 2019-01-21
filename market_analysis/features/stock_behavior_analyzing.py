@@ -2,8 +2,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from features import ReturnsStatistics
-from features import TechnicalFeaturesCalculator
+from market_analysis.features import ReturnsStatistics
+from market_analysis.features import TechnicalFeaturesCalculator
 
 returns_statistics= ReturnsStatistics()
 tfc = TechnicalFeaturesCalculator()

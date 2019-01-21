@@ -125,6 +125,7 @@ class DataPreprocessor:
     def load_scalers(self, folder):
         if folder[-1] != '/':
             folder = folder + '/'
+
         self.minmaxscaler = joblib.load(folder + "price")
         self.stocks_scaler = joblib.load(folder + "stocks")
         self.budget_scaler =joblib.load(folder + "budget")

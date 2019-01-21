@@ -11,21 +11,19 @@ import market_analysis.deep_q_learning.paths as paths
 
 class NeuralNet:
 
-    def __init__(self, num_of_states, num_of_actions, hidden_nodes_layer1, hidden_nodes_layer2, activation_function1, acivation_function2):
+    def __init__(self, num_of_states, num_of_actions, hidden_nodes, activation_functions):
         self.num_of_states = num_of_states
-        self.hidden_nodes1 = hidden_nodes_layer1
-        self.hidden_nodes2 = hidden_nodes_layer2
+
+        self.hidden_nodes = hidden_nodes
         self.num_actions = num_of_actions
 
-        self.activation_func1 = activation_function1
-        self.activation_func2 = acivation_function2
+        self.activation_functions = activation_functions
 
         self.weights = [0]*4
         self.biases = [0]*4
 
-        self.setup_net(num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions)
+        self.setup_net(num_of_states, hidden_nodes, num_of_actions)
 
-        # tf.reset_default_graph()
         self.session =  tf.Session()
         self.saver = tf.train.Saver()
         self.session.run(tf.global_variables_initializer())
@@ -33,34 +31,48 @@ class NeuralNet:
         self.losses = []
 
     def get_architecture_string(self):
-        return '%i_%i_%s_%s' % (self.hidden_nodes1, self.hidden_nodes2, self.activation_func1, self.activation_func2)
+        return '%i_%i_%s_%s' % (self.hidden_nodes[0], self.hidden_nodes[1], self.activation_functions[0], self.activation_functions[1])
 
-    def setup_net(self, num_of_states, hidden_nodes_layer1, hidden_nodes_layer2, num_of_actions):
+    def setup_net(self, num_of_states, hidden_nodes, num_of_actions):
         self.states = tf.placeholder(shape=(None, num_of_states), dtype=tf.float32, name="states")
         self.target_q = tf.placeholder(dtype=tf.float32, shape=[None, num_of_actions], name="target_q" )
 
         with tf.name_scope('layers'):
-            self.weights[0] = tf.Variable(tf.random_uniform([num_of_states, hidden_nodes_layer1], minval=-0.05, maxval=0.05), dtype=tf.float32)
-            self.biases[0] = tf.Variable(tf.random_uniform([hidden_nodes_layer1]))
 
-            self.weights[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer1, hidden_nodes_layer2], minval=-0.05, maxval=0.05), dtype=tf.float32)
-            self.biases[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer2]))
+            acts = []
+            num_hidden_nodes = len(hidden_nodes)
+            for i in range(num_hidden_nodes):
+                if i == 0:
+                    input_size = num_of_states
+                    input = self.states
+                else:
+                    input_size = hidden_nodes[i-1]
+                    input = acts[i-1]
 
-            self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, 8], minval=-0.05, maxval=0.05), dtype=tf.float32)
-            self.biases[2] = tf.Variable(tf.random_uniform([8]))
+                self.weights[i] = tf.Variable(tf.random_uniform([input_size, hidden_nodes[i]], minval=-0.05, maxval=0.05), dtype=tf.float32)
+                # self.biases[i] = tf.Variable(tf.random_uniform([hidden_nodes[i]]))
+                act = self.get_activation_function(self.activation_functions[i])
+                acts.append(act(tf.matmul(input, self.weights[i])))
 
-            self.weights[3] = tf.Variable(tf.random_uniform([8, num_of_actions], minval=-0.05, maxval=0.05), dtype=tf.float32)
-            self.biases[3] = tf.Variable(tf.random_uniform([num_of_actions]))
+                # self.weights[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer1, hidden_nodes_layer2], minval=-0.05, maxval=0.05), dtype=tf.float32)
+                # self.biases[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer2]))
+                #
+                # self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, 8], minval=-0.05, maxval=0.05), dtype=tf.float32)
+                # self.biases[2] = tf.Variable(tf.random_uniform([8]))
 
-            act1 = self.get_activation_function(self.activation_func1)
-            act2 = self.get_activation_function(self.activation_func2)
+            self.weights[num_hidden_nodes] = tf.Variable(tf.random_uniform([hidden_nodes[num_hidden_nodes-1], num_of_actions], minval=-0.05, maxval=0.05), dtype=tf.float32)
+            self.biases[num_hidden_nodes] = tf.Variable(tf.random_uniform([num_of_actions]))
 
-            A1 = act1(tf.matmul(self.states, self.weights[0]))
-            A2 = act2(tf.matmul(A1, self.weights[1]) )
-            A3 = act2(tf.matmul(A2, self.weights[2]))
-            self.predicted_q = tf.matmul(A3, self.weights[3])
+            # act1 = self.get_activation_function(self.activation_functions[0])
+            # act2 = self.get_activation_function(self.activation_functions[1])
+            # act3 = self.get_activation_function(self.activation_functions[2])
 
-            tf.summary.histogram("predicted", self.predicted_q)
+            # A1 = act1(tf.matmul(self.states, self.weights[0]))
+            # A2 = act2(tf.matmul(A1, self.weights[1]) )
+            # A3 = act3(tf.matmul(A2, self.weights[2]))
+            self.predicted_q = tf.matmul(acts[num_hidden_nodes-1], self.weights[3])
+
+            # tf.summary.histogram("predicted", self.predicted_q)
 
         with tf.name_scope("loss" +self.get_architecture_string()):
             self.loss = tf.losses.mean_squared_error(self.target_q, self.predicted_q)
@@ -115,8 +127,8 @@ class NeuralNet:
         self.saver.save(self.session, path)
 
         with open(path+"parameters", 'wb') as file:
-            model = ModelParameters(self.hidden_nodes1, self.hidden_nodes2,
-                                    self.activation_func1, self.activation_func2,
+            model = ModelParameters(self.hidden_nodes[0], self.hidden_nodes[1],
+                                    self.activation_functions[0], self.activation_functions[1],
                                     self.num_of_states, self.num_actions)
             cPickle.dump(model, file)
 

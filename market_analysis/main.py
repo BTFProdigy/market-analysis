@@ -5,7 +5,7 @@ from predictions import RollingForwardCrossValidation
 from predictions import VARPredictor, ModelConfiguration
 from data_reader import DataReaderImpl
 from features import DateFrameBuilder
-from market_analysis.deep_q_learning.data.db_worker import DBWorker
+from market_analysis.deep_q_learning.data_api.db_worker import DBWorker
 from market_analysis.postprocessing import PostprocessingSteps
 from preprocessing import PreprocessingSteps
 from datetime import datetime as dt

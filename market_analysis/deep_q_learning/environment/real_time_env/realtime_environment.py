@@ -1,6 +1,6 @@
 import numpy as np
 
-from market_analysis.deep_q_learning.action import Action
+from market_analysis.deep_q_learning.reinforcement.action import Action
 
 
 class RealTimeEnvironment:
