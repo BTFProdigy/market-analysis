@@ -1,25 +1,37 @@
 from collections import namedtuple
 
+from market_analysis.deep_q_learning.preprocessing.data_preprocessor import DataPreprocessor
 from market_analysis.deep_q_learning.reinforcement.action import Action
 import numpy as np
 State = namedtuple('State', ['data', 'stocks','profit', 'inv'])
 # State = namedtuple('State', ['data', 'stocks','inv'])
 
+
+# def clipper(rewardf):
+#     def clip(min, max):
+#         result = rewardf()
+#         return np.clip(result, min, max)
+#     return clip
+
 class Reward:
 
-    def __init__(self, preprocessor):
-        self.preprocessor = preprocessor
+    def clipper(self, rewardf):
+        def clip(min, max):
+            result = rewardf()
+            return np.clip(result, min, max)
+        return clip
 
-    # za cenu dodati min
+    # @clipper
     def get_reward(self, state, action, new_state):
         new_state_tuple = State(*new_state)
         state_tuple = State(*state)
+
+        self.preprocessor = DataPreprocessor.get_instance()
+
         p1 = self.preprocessor.inverse_transform_budget(new_state_tuple.profit)
         p0 = self.preprocessor.inverse_transform_budget(state_tuple.profit)
-        #
         n1 = self.preprocessor.inverse_transform_stocks(new_state_tuple.stocks)
         n0 = self.preprocessor.inverse_transform_stocks(state_tuple.stocks)
-        # # # #
         d1 = self.preprocessor.inverse_transform_price(new_state_tuple.data)
         d0 = self.preprocessor.inverse_transform_price(state_tuple.data)
 
@@ -36,18 +48,12 @@ class Reward:
         #     r = -0.01
         #
 
-
-
         if action == Action.Sell:
             if inv == 0:
                 r = 0
             else:
 
                 r = max(state_tuple.data - state_tuple.inv, 0)
-        #
-        #
-
-
 
         # if n1<0 or p1<0:
         #     r-=0.5
@@ -80,6 +86,8 @@ class Reward:
         # r = p1-p0 +n1*d1 - n0*d0
 
         return r
+
+
 
     def reward_if_state_good_enough(self, state):
         return
@@ -114,10 +122,6 @@ class Reward:
     def get_reward_for_being_alive(self):
         return 5
 
-    def clip_reward(self, reward):
-        clipped = np.clip(reward, self.min_value, self.max_value)
-        return clipped
-
     def get_reward_for_budget(self, state):
         if state.budget <=0:
             return -10
@@ -146,3 +150,4 @@ class Reward:
 
         elif action == Action.Sell and next_state.s_return > state.s_return:
             return -2
+

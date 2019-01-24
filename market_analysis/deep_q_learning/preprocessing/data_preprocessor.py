@@ -17,14 +17,14 @@ class DataPreprocessor:
         return DataPreprocessor._instance
 
     def __init__(self):
-        self.minmaxscaler = MinMaxScaler()
-        self.stocks_scaler = MinMaxScaler()
-        self.budget_scaler = MinMaxScaler()
+        self.minmaxscaler = None
+        self.stocks_scaler = None
+        self.budget_scaler = None
 
         self.data_transforms = DataTransforms()
         self.scaling = True
 
-    def preprocess_data(self, data, stocks, budget, training = True):
+    def preprocess_data(self, data, stocks, budget):
         if data.size != 0:
             dataframe = self.build_dataframe(data)
 
@@ -47,7 +47,11 @@ class DataPreprocessor:
                 budget_min_max = np.array([0, 1])
                 stocks_min_max = np.array([0, 1])
 
-                if training:
+                if self.minmaxscaler == None:
+                    self.minmaxscaler = MinMaxScaler()
+                    self.stocks_scaler = MinMaxScaler()
+                    self.budget_scaler = MinMaxScaler()
+
                     self.minmaxscaler.fit_transform(np.append(dataframe.values, 0).reshape(-1, 1))
                     self.stocks_scaler.fit(stocks_min_max.reshape(-1,1))
                     self.budget_scaler.fit(budget_min_max.reshape(-1,1))

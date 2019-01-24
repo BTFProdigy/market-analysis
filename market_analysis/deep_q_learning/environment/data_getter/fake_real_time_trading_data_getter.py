@@ -12,3 +12,11 @@ class FakeRealTimeTradingDataGetter:
         self.limit+=1
 
         return instance
+
+    def is_new_data_present(self, ticker):
+        return True
+
+
+    def get_new_data(self, ticker):
+
+        return self.get_data(ticker)
