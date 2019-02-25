@@ -22,17 +22,41 @@ class DeepQ (RLAlgorithm):
         self.replay_memory = replay_memory
         self.statistics = statistics
         self.epsilon_strategy = epsilon_strategy
-
+        self.confidence = 1
+        self.steps = 0
+        self.action_frequencies = np.zeros(self.num_of_actions)
         self.neural_net_logger = NeuralNetLogger(neural_network)
         # self.epsilon = 1
         # self.target_neural_network = target_net
         # self.updating_target_freq = 400
 
+
+    def get_action_with_confidence(self, state):
+        q_values = self.neural_network.predict(state)
+        actions = (1./self.action_frequencies)*np.log(self.steps)
+        value = np.argmax(q_values+self.confidence*np.sqrt(actions))
+        self.steps+=1
+        self.confidence*=0.8
+        self.action_frequencies[value]+=1
+        return value
+
+    def get_random_action(self):
+        if random.uniform(0,1) <=0.8:
+            value = random.randint(0,2)
+        else:
+            value = np.argmin(self.action_frequencies)
+        # actions = self.action_frequencies*(1./np.log(self.steps))
+        # value = np.argmin(np.sqrt(self.action_frequencies))
+        self.steps+=1
+        self.action_frequencies[value]+=1
+        return value
+
     def choose_action(self, state):
         self.epsilon = self.epsilon_strategy.get_epsilon_2()
         if random.uniform(0,1) < self.epsilon:
             self.num_of_random_actions+=1
-            return random.randint(0, self.num_of_actions - 1)
+            # return random.randint(0, self.num_of_actions - 1)
+            return self.get_random_action()
         else:
             return self.get_best_action_for_state(state)
 
@@ -56,10 +80,11 @@ class DeepQ (RLAlgorithm):
             self.statistics.budget_for_last_iteration = budget
 
             self.statistics.stocks_for_last_iteration = stocks
-
+            self.statistics.add_all_rewards(rewards)
             self.statistics.add_epsilon(self.epsilon)
             self.statistics.add_reward(total_reward)
             self.statistics.add_reward_avg(float(total_reward)/len(rewards))
+            self.statistics.add_actions(actions)
             self.statistics.actions_for_last_iteration = actions
 
             budget_at_the_end_of_iteration = budget[-1]
@@ -74,6 +99,7 @@ class DeepQ (RLAlgorithm):
             self.statistics.add_stocks(stocks_at_the_end_of_iteration)
             self.statistics.add_random_actions(self.num_of_random_actions)
 
+            self.statistics.states = self.environment.states
             # print self.neural_network.losses[-1]
             # self.print_q_values()
             # if self.converged(iteration):
@@ -115,11 +141,10 @@ class DeepQ (RLAlgorithm):
         while True:
             state = self.environment.curr_state
             action = self.choose_action(state)
-            # print '{}, Iteration {}'.format(action, self.iteration)
             actions.append(action)
-
+            #
             next_state, reward, done = self.environment.step(action)
-
+            #
             self.replay_memory.add((state, action, reward, next_state))
             self.replay()
             rewards.append(reward)
@@ -179,9 +204,9 @@ class DeepQ (RLAlgorithm):
 
         self.neural_network.train(states, q_values)
 
-    # def copy_weights(self):
-    #     weights, biases = self.neural_network.get_weights_and_biases()
-    #     self.target_neural_network.copy_weights_and_biases(weights, biases)
+
+
+
 
 
 

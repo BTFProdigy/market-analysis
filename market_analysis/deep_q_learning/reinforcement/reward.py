@@ -87,7 +87,9 @@ class Reward:
 
         return r
 
-
+    def reward_for_constant_decrease(self):
+        # menja se stanje
+        return
 
     def reward_if_state_good_enough(self, state):
         return

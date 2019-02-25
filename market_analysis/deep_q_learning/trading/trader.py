@@ -25,6 +25,8 @@ class Trader:
         self.random = random
         self.db_worker = db_worker
         self.trading_frequency = 6
+        self.actions = 0
+        self.negative_states = 0
 
     def trade(self, env, model):
         nn = None if self.random else ModelPersister.restore_model(model)
@@ -45,6 +47,10 @@ class Trader:
         #     or (action == Action.Sell and env.agent_state.num_of_stocks>0) or action == Action.DoNothing:
         # print 'Price: {}'.format(self.data_preprocessor.inverse_transform_price(state[0]))
 
+
+        if env.agent_state.budget<0 or env.agent_state.num_of_stocks<0:
+            self.negative_states+=1
+
         if not limited or (self.buy_with_no_money(env, action) or self.sell_with_no_stocks(env, action)):
             self.make_action(env, action)
 
@@ -54,16 +60,17 @@ class Trader:
     def make_action(self, env, action):
         env.step(action)
         agent_state = env.agent_state
-
+        self.actions+=1
         self.print_state(agent_state)
 
     def print_state(self, agent_state):
         elapsed_time = (time.time() - self.start_time)
         elapsed_time_string = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
         print 'Agent {} has budget {} and number of stocks {}, ' \
-              'Current time: {}, Time elapsed: {}'.format(self.name, agent_state.budget,
+              'Current time: {}, Time elapsed: {}, Action: {},' \
+              'Negative states:{}'.format(self.name, agent_state.budget,
                                                           agent_state.num_of_stocks,datetime.datetime.now(),
-                                                          elapsed_time_string)
+                                                          elapsed_time_string, self.actions, self.negative_states)
     def buy_with_no_money(self, env, action):
         state = env.agent_state
         # return action == Action.Buy and state.budget < env.curr_state[0]

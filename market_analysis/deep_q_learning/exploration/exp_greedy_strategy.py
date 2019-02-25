@@ -1,19 +1,23 @@
 import math
 
-from market_analysis.deep_q_learning.exploration.greedy_strategy import GreedyStrategy
+# from market_analysis.deep_q_learning.exploration.greedy_strategy import GreedyStrategy
+from market_analysis.deep_q_learning.exploration.linear_greedy_strategy import LinearGreedyStrategy
+from market_analysis.deep_q_learning.exploration.strategy import Strategy
 
 
-class ExpGreedyStrategy(GreedyStrategy):
+class ExpGreedyStrategy(LinearGreedyStrategy):
+
 
     def __init__(self, num_of_actions, num_of_iterations, num_of_states_per_episode):
-        super.__init__(num_of_actions, num_of_iterations, num_of_states_per_episode)
+        super(ExpGreedyStrategy, self).__init__(num_of_actions, num_of_iterations, num_of_states_per_episode)
+        # super.__init__(num_of_actions, num_of_iterations, num_of_states_per_episode)
         self.exp_decay_epsilon = self.get_exp_decay_factor()
 
-    def get_epsilon_exponentially(self):
+    def get_epsilon(self):
         self.exp_decay_epsilon = self.get_exp_decay_factor()
-        # return self.init_epsilon * math.exp(-0.000001* self.steps)
+        return self.init_epsilon * math.exp(-0.00008* self.steps)
 
-        return self.init_epsilon * math.exp(-self.exp_decay_epsilon * self.steps)
+        # return self.init_epsilon * math.exp(-self.exp_decay_epsilon * self.steps)
 
     def get_exp_decay_factor(self):
 

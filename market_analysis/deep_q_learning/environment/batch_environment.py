@@ -27,7 +27,7 @@ class BatchEnvironment(Environment):
         # self.unrp = self.agent_state.num_of_stocks*self.data.iloc[0]
         self.agent_state.reset()
         # self.num_of_stocks_bought = self.initial_num_of_stocks
-
+        self.states = []
         self.data_index = 1
 
         self.curr_state = self.create_state(self.data.iloc[0],
@@ -48,6 +48,7 @@ class BatchEnvironment(Environment):
     #     return values
 
     def step(self, action):
+        self.states.append(self.curr_state.copy())
         new_state, done = self.get_new_state(self.curr_state, action)
 
         if new_state is None:

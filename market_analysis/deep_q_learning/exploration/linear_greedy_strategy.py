@@ -45,9 +45,8 @@ class LinearGreedyStrategy(Strategy):
 
 
     def get_epsilon_2(self):
-        # self.epsilon*=0.9995
-
-        self.epsilon*=0.99992
-        self.epsilon = 1
+        # self.epsilon*=0.9998
+        #
+        self.epsilon*=0.9995
         self.steps+=1
         return self.epsilon

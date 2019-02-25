@@ -38,7 +38,7 @@ class LocalAgents:
         agent2 = Trader(self.db_worker, "random1", True)
         agent3 = Trader(self.db_worker, "random2", True)
 
-        agent1.trade(self.build_trading_env(agent_state1, ticker), "model_randommmm/")
+        agent1.trade(self.build_trading_env(agent_state1, ticker),"model_updated-12-12-12-february10-tanh/")
         agent2.trade(self.build_trading_env(agent_state2, ticker), "")
         agent3.trade(self.build_trading_env(agent_state3, ticker), "")
 

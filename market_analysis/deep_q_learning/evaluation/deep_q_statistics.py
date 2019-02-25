@@ -13,10 +13,19 @@ class DeepQStatistics:
 
         self.actions_for_last_iteration = []
         self.random_actions = []
-
+        self.all_rewards = []
         self.rewards_for_last_iteration= []
-
+        self.all_actions = []
         self.num_of_states_per_episode = num_of_states_per_episode
+        self.states = None
+
+    def add_all_rewards(self, rewards):
+        self.all_rewards.append(rewards)
+
+    def add_actions(self, actions):
+        num = len(actions)
+        self.all_actions.append((float(actions.count(0))/num, float(actions.count(1))/num, float(actions.count(2))/num))
+        # self.all_actions.append(actions)
 
     def add_reward(self, reward):
         self.rewards_history.append(reward)

@@ -18,6 +18,8 @@ class Evaluator:
             q_values = nn.predict(state)
 
             action = np.argmax(q_values)
+
+
             actions.append(action)
 
             next_state, reward, done = env.step(action)
@@ -27,20 +29,29 @@ class Evaluator:
             if done:
                 break
 
-        return total_reward, actions, rewards
+
+        num = len(actions)
+        all_actions=(float(actions.count(0))/num, float(actions.count(1))/num, float(actions.count(2))/num)
+
+        return total_reward, total_reward/(float) (len(rewards)), actions, rewards, all_actions
 
     def test(self, model, env, data):
         evaluation = Evaluation()
 
-        total_reward, actions, rewards = self.pass_through_data(env, model)
+        total_reward, avg_reward, actions, rewards, all_actions = self.pass_through_data(env, model)
 
         # self.save_agents_behavior(actions, rewards, data.index)
         agent_state = env.agent_state
         print '''Budget: {},
                 Num of stocks: {},
-                Reward: {}'''.format(agent_state.budget,
+                Reward: {}, 
+                Avg reward:{},
+                actions:{}, 
+                profit:{}'''.format(agent_state.budget,
                                      agent_state.num_of_stocks,
-                                     total_reward)
+                                     total_reward,
+                                     avg_reward,
+                                     all_actions, env.agent_state.profit_by_selling)
 
         evaluation.plot_actions_during_time(data['Price'], actions)
         return total_reward, agent_state.budget, agent_state.num_of_stocks
