@@ -1,9 +1,7 @@
 import cPickle
 
 from market_analysis.deep_q_learning import paths
-# from market_analysis.deep_q_learning.neural_net.neural_net_keras import NeuralNetwork
 from market_analysis.deep_q_learning.neural_net.neural_net import NeuralNet
-from market_analysis.deep_q_learning.neural_net.neural_net_keras import NeuralNetwork
 
 
 class ModelPersister:
@@ -28,4 +26,3 @@ class ModelPersister:
     def load_model_parameters(file_name):
         with open(file_name, 'rb') as file:
             return cPickle.load(file)
-

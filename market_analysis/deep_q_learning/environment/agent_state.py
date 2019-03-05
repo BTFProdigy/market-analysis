@@ -14,9 +14,6 @@ class AgentState:
         self.inventory = []
 
         self.profit_by_selling = 0
-        # self.num_of_actions = 0
-        # self.period = 100
-        # self.period_tracker = 0
 
     def get_inventory(self):
         if self.inventory.__len__() == 0:
@@ -30,13 +27,13 @@ class AgentState:
         else:
             self.inventory.pop(-1)
 
-    def add_action(self, is_buy_or_sell):
-        self.period_tracker+=1
-        if self.period_tracker == self.period:
-            self.period_tracker = 0
-
-        if is_buy_or_sell:
-            self.num_of_actions+=1
+    # def add_action(self, is_buy_or_sell):
+    #     self.period_tracker+=1
+    #     if self.period_tracker == self.period:
+    #         self.period_tracker = 0
+    #
+    #     if is_buy_or_sell:
+    #         self.num_of_actions+=1
 
     def get_inv_len(self):
         return  self.inventory.__len__()

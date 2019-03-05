@@ -21,10 +21,3 @@ class ReplayMemory:
         else:
             return random.sample(self.buffer, batch_size)
 
-        # indices = np.random.choice(np.arange(buffer_size),
-        #                          size = batch_size,
-        #                          replace = False)
-        #
-        # return [self.buffer[i] for i in indices]
-
-

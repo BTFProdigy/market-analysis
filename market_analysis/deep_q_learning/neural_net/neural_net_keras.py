@@ -1,18 +1,13 @@
-import tensorflow as tf
-
 import cPickle
 
-from keras import Sequential
-from keras.layers import Dense
-from keras.optimizers import Adam
+import tensorflow as tf
 from tensorflow.python.ops.losses.losses_impl import Reduction
-
 
 from market_analysis.deep_q_learning.neural_net import ActivationFunction
 from market_analysis.deep_q_learning.neural_net.model_parameters import ModelParameters
-import matplotlib.pyplot as plt
-import market_analysis.deep_q_learning.paths as paths
-class NeuralNetwork:
+
+
+class NeuralNetworkKeras:
 
     def __init__(self, num_of_states, num_of_actions, hidden_nodes, activation_functions):
         self.num_of_states = num_of_states
@@ -26,27 +21,14 @@ class NeuralNetwork:
 
 
         self.setup_net(num_of_states, hidden_nodes, num_of_actions)
-        # self.setup_net1()
         self.session =  tf.Session()
         self.saver = tf.train.Saver()
         self.session.run(tf.global_variables_initializer())
 
         self.losses = []
-        # self.writer = self.create_writer()
 
     def get_architecture_string(self):
         return '%i_%i_%s_%s' % (self.hidden_nodes[0], self.hidden_nodes[1], self.activation_functions[0], self.activation_functions[1])
-
-
-    # def setup_net1(self):
-    #     model = Sequential()
-    #     model.add(Dense(units=16, input_dim=self.num_of_states, activation="relu"))
-    #     model.add(Dense(units=16, activation="relu"))
-    #     model.add(Dense(units=8, activation="relu"))
-    #     model.add(Dense(self.num_actions, activation="linear"))
-    #     model.compile(loss="mse", optimizer=Adam())
-    #     self.model = model
-
 
     def setup_net(self, num_of_states, hidden_nodes, num_of_actions):
         self.states = tf.placeholder(shape=(None, num_of_states), dtype=tf.float32, name="states")
@@ -84,7 +66,6 @@ class NeuralNetwork:
         # self.optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
 
     def train(self, states, target_q):
-        # self.model.fit(states, target_q, epochs=1, verbose=0)
         _, loss = self.session.run([self.optimizer, self.loss], feed_dict={self.states: states, self.target_q: target_q})
         self.losses.append(loss)
 
@@ -96,12 +77,10 @@ class NeuralNetwork:
             return tf.nn.tanh
 
     def predict(self, state):
-        # return self.model.predict(state.reshape(1, self.num_of_states))
         return self.session.run(self.predicted_q, feed_dict={self.states:
                                                             state.reshape(1, self.num_of_states)})
 
     def predict_batch(self, states):
-        # predicted = self.model.predict(states)
         predicted =  self.session.run(self.predicted_q, feed_dict={self.states: states})
         return predicted
 
@@ -117,11 +96,3 @@ class NeuralNetwork:
     def restore_model(self, path):
         self.saver.restore(self.session, path)
         return self
-
-    # def get_weights(self):
-    #     w0= tf.get_variable('layer1/kernel')
-    #     return w0
-    #
-    # def set_weights(self):
-    #     w0= tf.set_('layer1/kernel')
-    #     return w0

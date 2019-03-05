@@ -1,14 +1,14 @@
+from errno import EEXIST
+from os import makedirs, path
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import pylab
+from mpl_toolkits.mplot3d import Axes3D
+from sklearn.decomposition import PCA
 
 from market_analysis.deep_q_learning.reinforcement.action import Action
-from errno import EEXIST
-from os import makedirs,path
-import numpy as np
-import pylab
-from sklearn.decomposition import PCA
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
 
 models_path = '/home/nissatech/Documents/Market Analysis Data/Plots/KaoNovo/'
 class Evaluation:
@@ -51,7 +51,7 @@ class Evaluation:
         self.scatter_plot_rewards_for_actions_last_iteration(deep_q_statistics.actions_for_last_iteration, deep_q_statistics.rewards_for_last_iteration, model)
         self.plot_states_3d(deep_q_statistics.states, deep_q_statistics.actions_for_last_iteration, model)
 
-        self.plot_states_3d1(deep_q_statistics.states, deep_q_statistics.actions_for_last_iteration, model)
+        self.price_and_inventory_with_actions(deep_q_statistics.states, deep_q_statistics.actions_for_last_iteration, model)
 
         self.plot_contour(deep_q_statistics.all_rewards, model)
         self.plot_rewards_for_last_iteration(deep_q_statistics.rewards_for_last_iteration, model)
@@ -229,7 +229,7 @@ class Evaluation:
         self.save_figure(model, 'States in reduced 2d state with actions')
         plt.show()
 
-    def plot_states_3d1(self,  states, actions, model):
+    def price_and_inventory_with_actions(self, states, actions, model):
         states = np.array(states)
         COLORS = ['blue', 'm', 'orange']
         ACTIONS = ['Buy', 'Sell', 'Do Nothing']

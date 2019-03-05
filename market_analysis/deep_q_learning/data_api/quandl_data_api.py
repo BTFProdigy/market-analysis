@@ -1,15 +1,6 @@
 
 import quandl
 
-
-# def get_data(start, ticker):
-#     data = quandl.get(ticker, start_date=start)
-#     # data.columns=['Date', 'Close', 'Open', 'High', 'Low', 'Volume']
-#     data.columns= ['Close']
-#     # data = data.set_index('Date')
-#     data = data.sort_index()
-#     print data
-#     return data
 from market_analysis.deep_q_learning.data_api.data_api import DataApi
 
 

@@ -1,6 +1,8 @@
 
-import market_analysis.deep_q_learning.paths as paths
 import tensorflow as tf
+
+import market_analysis.deep_q_learning.paths as paths
+
 
 class NeuralNetLogger:
 

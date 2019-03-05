@@ -1,13 +1,10 @@
-import tensorflow as tf
-
 import cPickle
 
-from tensorflow.python.ops.losses.losses_impl import Reduction
+import tensorflow as tf
 
 from market_analysis.deep_q_learning.neural_net import ActivationFunction
 from market_analysis.deep_q_learning.neural_net.model_parameters import ModelParameters
-import matplotlib.pyplot as plt
-import market_analysis.deep_q_learning.paths as paths
+
 
 class NeuralNet:
 
@@ -54,22 +51,9 @@ class NeuralNet:
                 act = self.get_activation_function(self.activation_functions[i])
                 acts.append(act(tf.matmul(input, self.weights[i])))
 
-                # self.weights[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer1, hidden_nodes_layer2], minval=-0.05, maxval=0.05), dtype=tf.float32)
-                # self.biases[1] = tf.Variable(tf.random_uniform([hidden_nodes_layer2]))
-                #
-                # self.weights[2] = tf.Variable(tf.random_uniform([hidden_nodes_layer2, 8], minval=-0.05, maxval=0.05), dtype=tf.float32)
-                # self.biases[2] = tf.Variable(tf.random_uniform([8]))
-
             self.weights[num_hidden_nodes] = tf.Variable(tf.random_uniform([hidden_nodes[num_hidden_nodes-1], num_of_actions], minval=-0.05, maxval=0.05), dtype=tf.float32)
             self.biases[num_hidden_nodes] = tf.Variable(tf.random_uniform([num_of_actions]))
 
-            # act1 = self.get_activation_function(self.activation_functions[0])
-            # act2 = self.get_activation_function(self.activation_functions[1])
-            # act3 = self.get_activation_function(self.activation_functions[2])
-
-            # A1 = act1(tf.matmul(self.states, self.weights[0]))
-            # A2 = act2(tf.matmul(A1, self.weights[1]) )
-            # A3 = act3(tf.matmul(A2, self.weights[2]))
             self.predicted_q = tf.matmul(acts[num_hidden_nodes-1], self.weights[3])
 
             # tf.summary.histogram("predicted", self.predicted_q)
@@ -96,9 +80,6 @@ class NeuralNet:
         return self.session.run([self.weights, self.biases])
 
     def copy_weights_and_biases(self, weights, biases):
-        # w = weights[:]
-        # # print self.weights
-        # b = biases[:]
         for i in range(4):
             self.weights[i].assign(tf.Variable(weights[i]))
             self.biases[i].assign(tf.Variable(biases[i]))

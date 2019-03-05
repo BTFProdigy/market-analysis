@@ -1,19 +1,15 @@
-import cPickle
 from collections import namedtuple
 
 import numpy as np
 
-from market_analysis.deep_q_learning import paths
+from market_analysis.deep_q_learning.evaluation.deep_q_statistics import DeepQStatistics
 from market_analysis.deep_q_learning.evaluation.evaluation import Evaluation
 from market_analysis.deep_q_learning.exploration.linear_greedy_strategy import LinearGreedyStrategy
 from market_analysis.deep_q_learning.neural_net.model_persister import ModelPersister
 from market_analysis.deep_q_learning.neural_net.neural_net import NeuralNet
-from market_analysis.deep_q_learning.neural_net.neural_net_keras import NeuralNetwork
+from market_analysis.deep_q_learning.preprocessing.data_preprocessor import DataPreprocessor
 from market_analysis.deep_q_learning.reinforcement.action import Action
 from market_analysis.deep_q_learning.reinforcement.deep_q import DeepQ
-from market_analysis.deep_q_learning.evaluation.deep_q_statistics import DeepQStatistics
-from market_analysis.deep_q_learning.preprocessing.data_preprocessor import DataPreprocessor
-from market_analysis.deep_q_learning.neural_net import ActivationFunction
 from market_analysis.deep_q_learning.reinforcement.replay_memory import ReplayMemory
 
 Conf = namedtuple('Conf', ['hidden_nodes', 'act_f'])

@@ -1,6 +1,8 @@
 import time
 from datetime import datetime as dt
+
 from market_analysis.deep_q_learning.data_api.trade import Trade
+
 
 class OrderBook:
 
@@ -70,9 +72,9 @@ class OrderBook:
 
                 self.trades.append(Trade(order.order_id, order.ticker, best_order.price, stocks_passed , timestamp))
                 order.stocks-=stocks_passed
+
         except Exception, e:
             print 'No asks or bids in order book'
-        return
 
     def get_order_index(self, id, side):
         if side == "Ask":

@@ -10,7 +10,6 @@ class DateFrameBuilder:
 
         self.data = data
         self.close_prices = self.data['Price']
-        # self.close_prices.columns = ['Price']
         self.dataframe = pd.DataFrame()
         self.dataframe = pd.concat([self.close_prices], axis =1)
 

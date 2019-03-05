@@ -1,8 +1,9 @@
 import uuid
 
-from market_analysis.deep_q_learning.reinforcement.action import Action
 from market_analysis.deep_q_learning.data_api.order import Order
+from market_analysis.deep_q_learning.reinforcement.action import Action
 from market_analysis.deep_q_learning.trading.actions.action_performer import ActionPerformer
+
 
 class OrderBookActionPerformer(ActionPerformer):
     def __init__(self, order_book):

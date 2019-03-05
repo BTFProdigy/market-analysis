@@ -18,5 +18,4 @@ class FakeRealTimeTradingDataGetter:
 
 
     def get_new_data(self, ticker):
-
         return self.get_data(ticker)

@@ -1,17 +1,14 @@
-from market_analysis.deep_q_learning import config_getter, paths
-from market_analysis.deep_q_learning.data_api.db_worker import DBWorker
+from market_analysis.deep_q_learning import paths
 from market_analysis.deep_q_learning.environment.agent_state import AgentState
-from market_analysis.deep_q_learning.environment.environment_builder import EnvironmentBuilder
 from market_analysis.deep_q_learning.environment.data_getter.fake_real_time_trading_data_getter import \
     FakeRealTimeTradingDataGetter
+from market_analysis.deep_q_learning.environment.environment_builder import EnvironmentBuilder
 from market_analysis.deep_q_learning.preprocessing.data_preprocessor import DataPreprocessor
 from market_analysis.deep_q_learning.reinforcement.reward import Reward
 from market_analysis.deep_q_learning.trading.actions.order_book_action_performer import OrderBookActionPerformer
 from market_analysis.deep_q_learning.trading.local_agents_environment.order_book import OrderBook
-
 from market_analysis.deep_q_learning.trading.trader import Trader
-import os.path
-import configparser
+
 
 class LocalAgents:
 
@@ -57,12 +54,3 @@ class LocalAgents:
 
         env = env_builder.build_trading_environment(realtime_data_getter, ticker, self.action_performer, agent_state, data_preprocessor)
         return env
-
-
-
-
-
-
-
-
-

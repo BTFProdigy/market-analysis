@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 from market_analysis.deep_q_learning.agents_behavior_saver import AgentsBehaviorSaver
 from market_analysis.deep_q_learning.evaluation.evaluation import Evaluation
 
@@ -18,8 +19,6 @@ class Evaluator:
             q_values = nn.predict(state)
 
             action = np.argmax(q_values)
-
-
             actions.append(action)
 
             next_state, reward, done = env.step(action)
@@ -28,7 +27,6 @@ class Evaluator:
 
             if done:
                 break
-
 
         num = len(actions)
         all_actions=(float(actions.count(0))/num, float(actions.count(1))/num, float(actions.count(2))/num)
@@ -56,8 +54,8 @@ class Evaluator:
         evaluation.plot_actions_during_time(data['Price'], actions)
         return total_reward, agent_state.budget, agent_state.num_of_stocks
 
-    # def save_agents_behavior(self, actions, rewards, index):
-    #     behavior_saver = AgentsBehaviorSaver()
-    #     actions_series = pd.Series(actions, index = index, name='Actions')
-    #     rewards_series = pd.Series(rewards, index = index, name = 'Rewards')
-    #     behavior_saver.save(actions_series, rewards_series)
+    def save_agents_behavior(self, actions, rewards, index):
+        behavior_saver = AgentsBehaviorSaver()
+        actions_series = pd.Series(actions, index = index, name='Actions')
+        rewards_series = pd.Series(rewards, index = index, name = 'Rewards')
+        behavior_saver.save(actions_series, rewards_series)

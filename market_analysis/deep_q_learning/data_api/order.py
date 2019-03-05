@@ -1,5 +1,3 @@
-import uuid
-
 from cassandra.cqlengine.usertype import UserType
 
 

@@ -1,13 +1,14 @@
+from datetime import datetime as dt
+
 import pandas as pd
 from cassandra.cluster import Cluster
 
 from order import Order
-from datetime import datetime as dt
+
 
 class DBWorker(object):
     def __init__(self, address, db ):
         self.cluster = Cluster([address])
-        # self.cluster = Cluster(['localhost'])
         self.session = self.cluster.connect(db)
         self.cluster.register_user_type('market', 'market_order', Order)
 
@@ -32,8 +33,6 @@ class DBWorker(object):
         query = '''INSERT INTO market.order_book (ticker, bids, asks,  time) 
                   VALUES (%(ticker)s, %(bids)s, %(asks)s, %(time)s);'''
 
-        # bids = map(lambda x: x.__dict__, bids)
-        # print bids[0]
         params = {
             'ticker': ticker,
             'bids': bids,
@@ -73,7 +72,6 @@ class DBWorker(object):
             'ticker': ticker,
             'start_date': start_time,
             'limit_num': limit_num
-            # 'end_date': end_time
         }
 
         rows = self.session.execute(query, params)

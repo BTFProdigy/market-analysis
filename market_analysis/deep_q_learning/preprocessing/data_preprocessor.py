@@ -1,11 +1,13 @@
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-
-from market_analysis.features import DateFrameBuilder
-from market_analysis.preprocessing import DataTransforms
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from sklearn.externals import joblib
+from sklearn.preprocessing import MinMaxScaler
+
+from market_analysis.deep_q_learning.preprocessing.data_transforms import DataTransforms
+from market_analysis.features import DateFrameBuilder
+
+
 class DataPreprocessor:
 
     _instance = None
@@ -42,8 +44,6 @@ class DataPreprocessor:
             plt.show()
 
             if self.scaling:
-                # budget_min_max = np.array([0, budget*2])
-                # stocks_min_max = np.array([0, stocks*2])
                 budget_min_max = np.array([0, 1])
                 stocks_min_max = np.array([0, 1])
 
@@ -57,9 +57,7 @@ class DataPreprocessor:
                     self.budget_scaler.fit(budget_min_max.reshape(-1,1))
                 else:
                     self.minmaxscaler.transform(dataframe)
-            # return dataframe, self.transform_stocks(stocks), self.transform_budget(budget)
 
-            # return  dataframe.diff().fillna(0)
             return dataframe
 
         else: raise ValueError("There is no data")
@@ -73,9 +71,9 @@ class DataPreprocessor:
     def transform_price_batch(self, data):
         if self.scaling:
             return pd.DataFrame(self.minmaxscaler.transform(data), index = data.index, columns = data.columns)
-            # return data.diff().fillna(0)
         else:
             return data
+
     def transform_price(self, price):
         if self.scaling:
             return self.minmaxscaler.transform(price)[0][0]
@@ -112,9 +110,6 @@ class DataPreprocessor:
             DateFrameBuilder(data)
                 # .add_returns()
                 # .add_bolinger_bands_diff(7)
-                # .add_sharp_ratio(30)
-                # .add_cummulative_daily_returns()
-                # .add_daily_returns()
                 .build()
         )
         return dataframe
@@ -133,6 +128,3 @@ class DataPreprocessor:
         self.minmaxscaler = joblib.load(folder + "price")
         self.stocks_scaler = joblib.load(folder + "stocks")
         self.budget_scaler =joblib.load(folder + "budget")
-
-
-

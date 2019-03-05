@@ -1,6 +1,3 @@
-import random
-from threading import Timer
-
 import datetime
 import random
 import time
@@ -8,14 +5,8 @@ from threading import Timer
 
 import numpy as np
 
-import market_analysis.deep_q_learning.paths
-from market_analysis.deep_q_learning.environment.environment_builder import EnvironmentBuilder
-from market_analysis.deep_q_learning.environment.data_getter.fake_real_time_trading_data_getter import \
-    FakeRealTimeTradingDataGetter
 from market_analysis.deep_q_learning.neural_net.model_persister import ModelPersister
-from market_analysis.deep_q_learning.preprocessing.data_preprocessor import DataPreprocessor
 from market_analysis.deep_q_learning.reinforcement.action import Action
-from market_analysis.deep_q_learning.reinforcement.reward import Reward
 
 
 class Trader:
@@ -47,7 +38,6 @@ class Trader:
         #     or (action == Action.Sell and env.agent_state.num_of_stocks>0) or action == Action.DoNothing:
         # print 'Price: {}'.format(self.data_preprocessor.inverse_transform_price(state[0]))
 
-
         if env.agent_state.budget<0 or env.agent_state.num_of_stocks<0:
             self.negative_states+=1
 
@@ -73,7 +63,6 @@ class Trader:
                                                           elapsed_time_string, self.actions, self.negative_states)
     def buy_with_no_money(self, env, action):
         state = env.agent_state
-        # return action == Action.Buy and state.budget < env.curr_state[0]
         return action == Action.Buy and state.budget <= 0
 
     def sell_with_no_stocks(self, env, action):

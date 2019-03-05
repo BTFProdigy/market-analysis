@@ -40,9 +40,10 @@ class DataTransforms:
     def remove_outliers_usin_quartiles(self, df):
         low, high = 0.05, 0.95
         quant_df = df.quantile([low, high])
+        
         for name in df.columns:
             df[(df[name] >= quant_df.loc[low, name]) &
-                    (df[name] <= quant_df.loc[high, name])] = None
+                (df[name] <= quant_df.loc[high, name])] = None
         self.fill_missing_data(df)
 
         return df

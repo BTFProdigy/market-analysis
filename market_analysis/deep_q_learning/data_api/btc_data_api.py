@@ -1,9 +1,11 @@
 import json
+import os.path
 import time
 import uuid
 from datetime import datetime as dt
 from threading import Timer
 
+import configparser
 import requests
 
 from data_api import DataApi
@@ -11,9 +13,8 @@ from db_worker import DBWorker
 from market_analysis.deep_q_learning import config_getter
 from order import Order
 from trade import Trade
-import os.path
 
-import configparser
+
 class BtcDataApi(DataApi):
 
     def __init__(self, db_worker):
@@ -63,15 +64,12 @@ class BtcDataApi(DataApi):
         response = requests.get(url, params)
         json_response = json.loads(response.content)
 
-        print json_response
-
         bids_received = json_response['bids']
         asks_received = json_response['asks']
 
         bids = []
         asks = []
 
-        # bids = map(lambda x: Order(ticker, int(x[0]), int(x[1]), "Bid"), bids)
         size = 10
         for i in range(size):
             bid = bids_received[i]
@@ -91,7 +89,6 @@ class BtcDataApi(DataApi):
 
 def get_config(file):
     config = configparser.ConfigParser()
-    # config.read('config')
     config.read(os.path.dirname(os.path.dirname(__file__)) + '/' + file)
 
 

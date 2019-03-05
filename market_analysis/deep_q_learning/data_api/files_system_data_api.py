@@ -3,7 +3,6 @@ import traceback
 import pandas as pd
 
 from market_analysis.deep_q_learning.data_api.data_api import DataApi
-from market_analysis.data_reader.market_data_reader import DataReader
 
 
 class FileSystemDataApi(DataApi):
@@ -12,7 +11,6 @@ class FileSystemDataApi(DataApi):
         self.path = path
 
     def get_trades(self, stock, start_date, end_date = None):
-        # dates = pd.date_range(start_date, end_date)
         try:
             filename = self.path + stock.lower() + ".us.txt"
             df = pd.read_csv(filename, index_col="Date", parse_dates=True)
@@ -32,4 +30,3 @@ class FileSystemDataApi(DataApi):
 
         data = self.get_trades(path, market, start_date, end_date)
         return data
-        # for comparson
