@@ -47,7 +47,6 @@ class NeuralNet:
                     input = acts[i-1]
 
                 self.weights[i] = tf.Variable(tf.random_uniform([input_size, hidden_nodes[i]], minval=-0.05, maxval=0.05), dtype=tf.float32)
-                # self.biases[i] = tf.Variable(tf.random_uniform([hidden_nodes[i]]))
                 act = self.get_activation_function(self.activation_functions[i])
                 acts.append(act(tf.matmul(input, self.weights[i])))
 
@@ -68,13 +67,8 @@ class NeuralNet:
         #                                            100000, 0.96, staircase=True)
 
         with tf.name_scope("training"):
-            # self.optimizer = tf.train.ProximalAdagradOptimizer(
-            #     learning_rate=0.01,
-            #     l1_regularization_strength=0.01,
-            #     l2_regularization_strength=0.01).minimize(self.loss)
-            self.optimizer = tf.train.AdamOptimizer().minimize(self.loss)
 
-        # self.optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
+            self.optimizer = tf.train.AdamOptimizer().minimize(self.loss)
 
     def get_weights_and_biases(self):
         return self.session.run([self.weights, self.biases])

@@ -63,8 +63,6 @@ class NeuralNetworkKeras:
         with tf.name_scope("training"):
             self.optimizer = tf.train.AdamOptimizer().minimize(self.loss)
 
-        # self.optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
-
     def train(self, states, target_q):
         _, loss = self.session.run([self.optimizer, self.loss], feed_dict={self.states: states, self.target_q: target_q})
         self.losses.append(loss)

@@ -9,14 +9,9 @@ class ModelPersister:
     def restore_model(model):
         model_path = paths.get_models_path()+model
         model_parameters = ModelPersister.load_model_parameters(model_path + "parameters")
-        # nn = NeuralNet(model_parameters.input_size, model_parameters.output_size,
-        #                    [model_parameters.num_hidden_nodes1, model_parameters.num_hidden_nodes2, model_parameters.num_hidden_nodes2],
-        #                    [model_parameters.activation_function1, model_parameters.activation_function2, model_parameters.activation_function2])
-
-
         nn = NeuralNet(model_parameters.input_size, model_parameters.output_size,
-                       [12, 12, 12],
-                       [model_parameters.activation_function1, model_parameters.activation_function2, model_parameters.activation_function2])
+                           [model_parameters.num_hidden_nodes1, model_parameters.num_hidden_nodes2, model_parameters.num_hidden_nodes2],
+                           [model_parameters.activation_function1, model_parameters.activation_function2, model_parameters.activation_function2])
 
 
         nn = nn.restore_model(model_path)
